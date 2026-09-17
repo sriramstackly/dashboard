@@ -1,20 +1,31 @@
 import 'package:flutter/material.dart';
-
 import 'platform_administration_page.dart';
-import 'hrms_service_page.dart';
-import 'crm_service_page.dart';
-import 'erp_service_page.dart';
-import 'finance_accounting_service_page.dart';
-import 'workflow_automation_service_page.dart';
-import 'notification_service_page.dart';
-import 'subscription_service_page.dart';
-import 'revenue_service_page.dart';
-import 'reporting_bi_service_page.dart';
-import 'enterprise_ai_service_page.dart';
-import 'calendar_services_page.dart';
-import 'integration_service_page.dart';
-import 'search_service_page.dart';
-import 'security_compliance_service_page.dart';
+import 'global_dashboard_page.dart';
+
+
+/// ============================================================
+/// ASSET SETUP (READ THIS FIRST)
+/// ============================================================
+/// This file expects an image asset for the logo/avatar:
+///   assets/images/image(1).jpg
+///
+/// 1. Create the folder `assets/images/` in your project root and
+///    drop your file in there as `image(1).jpg`.
+/// 2. In pubspec.yaml add:
+///
+///    flutter:
+///      uses-material-design: true
+///      assets:
+///        - assets/icons/image(1).jpg
+///
+/// 3. Run `flutter pub get`.
+///
+/// If the asset is missing, every place that uses it below falls back
+/// to a plain icon automatically (via `errorBuilder`), so the app will
+/// never crash — it'll just show the fallback icon until you add the
+/// file.
+const String kLogoAssetPath = 'assets/images/image(1).jpg';
+const String kAvatarAssetPath = 'assets/images/image(1).jpg';
 
 class LandingPage extends StatefulWidget {
   const LandingPage({super.key});
@@ -30,33 +41,340 @@ class _LandingPageState extends State<LandingPage> {
 
   static const Color sidebarColor = Color(0xFF07153D);
   static const Color primaryBlue = Color(0xFF1769FF);
+  static const Color greenColor = Color(0xFF16A36A);
+  static const Color amberColor = Color(0xFFB98900);
+  static const Color redColor = Color(0xFFE0443E);
 
   // ============================================================
-  // EXPANSION STATES
+  // SELECTED MENU / LANGUAGE
   // ============================================================
 
-  bool platformExpanded = true;
-  bool hrmsExpanded = false;
-  bool crmExpanded = false;
-  bool erpExpanded = false;
-  bool financeExpanded = false;
-  bool workflowExpanded = false;
-  bool documentExpanded = false;
-  bool subscriptionExpanded = false;
-  bool revenueExpanded = false;
-  bool reportingExpanded = false;
-  bool aiExpanded = false;
-  bool notificationExpanded = false;
-  bool calendarExpanded = false;
-  bool integrationExpanded = false;
-  bool searchExpanded = false;
-  bool securityExpanded = false;
+  String selectedMenu = 'Super Admin Dashboard';
+  String selectedLanguage = 'English';
 
   // ============================================================
-  // SELECTED MENU
+  // SIDEBAR MENU DATA
   // ============================================================
 
-  String selectedMenu = 'Dashboard';
+  final List<_SidebarMenuData> superAdminMenu = const [
+    _SidebarMenuData('Super Admin Dashboard', Icons.grid_view_outlined),
+  ];
+
+  // "Platform Administration" main heading — expandable, with its
+  // own overview page (PlatformAdministrationPage) AND a set of
+  // submenu items that each navigate to their own page. See
+  // _pageForSelectedMenu() below for the page routing.
+  static final _SidebarGroupData platformAdminGroup = _SidebarGroupData(
+    title: 'Platform Administration',
+    icon: Icons.admin_panel_settings_outlined,
+    children: const [
+      _SidebarMenuData('Global Dashboard', Icons.public_outlined),
+      _SidebarMenuData('Platform Configuration', Icons.settings_outlined),
+      _SidebarMenuData('Platform Branding', Icons.palette_outlined),
+      _SidebarMenuData('Feature Management', Icons.extension_outlined),
+      _SidebarMenuData('License Management', Icons.description_outlined),
+      _SidebarMenuData('Settings', Icons.apps_outlined),
+    ],
+  );
+
+  // "HRMS Service" main heading — expandable, with its own overview
+  // page plus submenu items that each navigate to their own page.
+  // See _pageForSelectedMenu() below for the page routing.
+  static final _SidebarGroupData hrmsGroup = _SidebarGroupData(
+    title: 'HRMS Service',
+    icon: Icons.groups_2_outlined,
+    children: const [
+      _SidebarMenuData('Employee Mgmt.', Icons.badge_outlined),
+      _SidebarMenuData('Attendance', Icons.event_available_outlined),
+      _SidebarMenuData('Leave', Icons.beach_access_outlined),
+      _SidebarMenuData('Payroll', Icons.payments_outlined),
+      _SidebarMenuData('Recruitment', Icons.person_search_outlined),
+      _SidebarMenuData('Performance', Icons.trending_up_outlined),
+      _SidebarMenuData('Learning', Icons.school_outlined),
+      _SidebarMenuData('ESS / MSS', Icons.how_to_reg_outlined),
+      _SidebarMenuData('Asset Mgmt.', Icons.inventory_2_outlined),
+    ],
+  );
+
+  final List<_SidebarMenuData> organizationMenu = const [
+    _SidebarMenuData('Company Setup', Icons.business_outlined),
+    _SidebarMenuData('User Management', Icons.people_alt_outlined),
+  ];
+
+  // ------------------------------------------------------------
+  // DOMAIN MICROSERVICES (expandable groups, heading + sub-headings)
+  // ------------------------------------------------------------
+  // One group per domain box in the microservices diagram, from
+  // "Platform Administration Service" through to
+  // "Security & Compliance Service", each with a heading icon and
+  // an icon per sub-item.
+  //
+  // NOTE: a couple of the rarer icon names below were added in
+  // fairly recent Flutter SDKs (e.g. groups_2_outlined,
+  // currency_exchange_outlined). If any icon shows as an "undefined
+  // name" error on your Flutter version, just swap it for any other
+  // `Icons.xxx_outlined` constant — nothing else needs to change.
+  static final List<_SidebarGroupData> domainGroups = [
+    _SidebarGroupData(
+      title: 'CRM Service',
+      icon: Icons.handshake_outlined,
+      children: const [
+        _SidebarMenuData('Leads', Icons.person_add_alt_outlined),
+        _SidebarMenuData('Opportunities', Icons.trending_up_outlined),
+        _SidebarMenuData('Contacts', Icons.contacts_outlined),
+        _SidebarMenuData('Activities', Icons.checklist_outlined),
+        _SidebarMenuData('Pipeline', Icons.timeline_outlined),
+        _SidebarMenuData('Quotations', Icons.request_quote_outlined),
+        _SidebarMenuData('Campaigns', Icons.campaign_outlined),
+        _SidebarMenuData('Customer Support', Icons.support_agent_outlined),
+      ],
+    ),
+    _SidebarGroupData(
+      title: 'ERP Service',
+      icon: Icons.precision_manufacturing_outlined,
+      children: const [
+        _SidebarMenuData('Inventory', Icons.inventory_2_outlined),
+        _SidebarMenuData('Production', Icons.factory_outlined),
+        _SidebarMenuData('Sales Orders', Icons.shopping_cart_outlined),
+        _SidebarMenuData('Purchasing', Icons.shopping_bag_outlined),
+        _SidebarMenuData('Asset Mgmt.', Icons.devices_other_outlined),
+        _SidebarMenuData('Dispatch', Icons.local_shipping_outlined),
+        _SidebarMenuData('Maintenance', Icons.build_outlined),
+        _SidebarMenuData('Vendors', Icons.storefront_outlined),
+      ],
+    ),
+    _SidebarGroupData(
+      title: 'Finance & Accounting Service',
+      icon: Icons.account_balance_outlined,
+      children: const [
+        _SidebarMenuData('General Ledger', Icons.menu_book_outlined),
+        _SidebarMenuData('Accounts Payable', Icons.payment_outlined),
+        _SidebarMenuData('Accounts Receivable', Icons.receipt_long_outlined),
+        _SidebarMenuData('Tax Mgmt.', Icons.percent_outlined),
+        _SidebarMenuData('Budgeting', Icons.pie_chart_outline),
+        _SidebarMenuData('Costing', Icons.calculate_outlined),
+        _SidebarMenuData('Financial Reports', Icons.bar_chart_outlined),
+        _SidebarMenuData('Reconciliation', Icons.compare_arrows_outlined),
+        _SidebarMenuData('Multi-Currency', Icons.currency_exchange_outlined),
+      ],
+    ),
+    _SidebarGroupData(
+      title: 'Workflow & Automation Service',
+      icon: Icons.account_tree_outlined,
+      children: const [
+        _SidebarMenuData('Workflow Builder', Icons.schema_outlined),
+        _SidebarMenuData('Approvals', Icons.fact_check_outlined),
+        _SidebarMenuData('Business Rules', Icons.rule_outlined),
+        _SidebarMenuData('Process Automation', Icons.settings_outlined),
+        _SidebarMenuData('Task Mgmt.', Icons.task_alt_outlined),
+        _SidebarMenuData('Triggers', Icons.bolt_outlined),
+        _SidebarMenuData('SLAs & Escalations', Icons.alarm_outlined),
+        _SidebarMenuData('Process Monitoring', Icons.monitor_outlined),
+        _SidebarMenuData('Workflow Analytics', Icons.insights_outlined),
+      ],
+    ),
+    _SidebarGroupData(
+      title: 'Document Management Service',
+      icon: Icons.folder_outlined,
+      children: const [
+        _SidebarMenuData('Document Repository', Icons.folder_copy_outlined),
+        _SidebarMenuData('Versioning', Icons.history_outlined),
+        _SidebarMenuData('File Upload/Download', Icons.upload_file_outlined),
+        _SidebarMenuData('Access Control', Icons.lock_outline),
+        _SidebarMenuData('Document Templates', Icons.description_outlined),
+        _SidebarMenuData('Tagging & Search', Icons.label_outlined),
+        _SidebarMenuData('Retention Policies', Icons.policy_outlined),
+        _SidebarMenuData('Audit Trails', Icons.fact_check_outlined),
+        _SidebarMenuData('OCR Integration', Icons.document_scanner_outlined),
+      ],
+    ),
+    _SidebarGroupData(
+      title: 'Subscription Service',
+      icon: Icons.subscriptions_outlined,
+      children: const [
+        _SidebarMenuData('Plans & Features', Icons.list_alt_outlined),
+        _SidebarMenuData('Tenant Subscriptions', Icons.card_membership_outlined),
+        _SidebarMenuData('Usage & Quotas', Icons.speed_outlined),
+        _SidebarMenuData('Payment Terms', Icons.receipt_outlined),
+        _SidebarMenuData('License Allocation', Icons.assignment_ind_outlined),
+        _SidebarMenuData('License Keys', Icons.vpn_key_outlined),
+        _SidebarMenuData('Renewals', Icons.autorenew),
+        _SidebarMenuData('Trial Mgmt.', Icons.hourglass_empty_outlined),
+        _SidebarMenuData('Billing Integration', Icons.integration_instructions_outlined),
+      ],
+    ),
+    _SidebarGroupData(
+      title: 'Revenue Service',
+      icon: Icons.attach_money_outlined,
+      children: const [
+        _SidebarMenuData('Revenue Tracking', Icons.show_chart_outlined),
+        _SidebarMenuData('Forecasting', Icons.query_stats_outlined),
+        _SidebarMenuData('Revenue Reports', Icons.summarize_outlined),
+        _SidebarMenuData('Commission Mgmt.', Icons.percent_outlined),
+        _SidebarMenuData('Revenue Recognition', Icons.fact_check_outlined),
+        _SidebarMenuData('Financial Analytics', Icons.analytics_outlined),
+        _SidebarMenuData('Invoicing', Icons.receipt_long_outlined),
+        _SidebarMenuData('Integration', Icons.hub_outlined),
+      ],
+    ),
+    _SidebarGroupData(
+      title: 'Reporting & BI Service',
+      icon: Icons.insert_chart_outlined,
+      children: const [
+        _SidebarMenuData('Standard Reports', Icons.description_outlined),
+        _SidebarMenuData('Ad-hoc Reports', Icons.dashboard_customize_outlined),
+        _SidebarMenuData('Data Exploration', Icons.explore_outlined),
+        _SidebarMenuData('BI Mgmt.', Icons.leaderboard_outlined),
+        _SidebarMenuData('Data Export', Icons.ios_share_outlined),
+        _SidebarMenuData('Scheduled Reports', Icons.schedule_outlined),
+        _SidebarMenuData('Data Visualization', Icons.bar_chart_outlined),
+        _SidebarMenuData('Self-Service Analytics', Icons.query_stats_outlined),
+      ],
+    ),
+    _SidebarGroupData(
+      title: 'Enterprise AI Service',
+      icon: Icons.smart_toy_outlined,
+      children: const [
+        _SidebarMenuData('AI Models', Icons.psychology_outlined),
+        _SidebarMenuData('AI Chat/Copilot', Icons.chat_outlined),
+        _SidebarMenuData('Document AI/OCR', Icons.document_scanner_outlined),
+        _SidebarMenuData('Predictive Analytics', Icons.insights_outlined),
+        _SidebarMenuData('Recommendations', Icons.recommend_outlined),
+        _SidebarMenuData('AI Workflows', Icons.account_tree_outlined),
+        _SidebarMenuData('Model Mgmt.', Icons.tune_outlined),
+        _SidebarMenuData('Prompt Engineering', Icons.edit_note_outlined),
+        _SidebarMenuData('AI Usage Logs', Icons.history_outlined),
+      ],
+    ),
+    _SidebarGroupData(
+      title: 'Notification Service',
+      icon: Icons.notifications_none_outlined,
+      children: const [
+        _SidebarMenuData('In-App Notifications', Icons.notifications_active_outlined),
+        _SidebarMenuData('Email Notifications', Icons.email_outlined),
+        _SidebarMenuData('SMS Notifications', Icons.sms_outlined),
+        _SidebarMenuData('Push Notifications', Icons.campaign_outlined),
+        _SidebarMenuData('Templates', Icons.description_outlined),
+        _SidebarMenuData('Preferences', Icons.tune_outlined),
+        _SidebarMenuData('Schedules', Icons.schedule_outlined),
+        _SidebarMenuData('Delivery Tracking', Icons.track_changes_outlined),
+        _SidebarMenuData('Multi-Channel', Icons.hub_outlined),
+      ],
+    ),
+    _SidebarGroupData(
+      title: 'Calendar Service',
+      icon: Icons.calendar_month_outlined,
+      children: const [
+        _SidebarMenuData('User Calendars', Icons.event_outlined),
+        _SidebarMenuData('Team Calendars', Icons.groups_outlined),
+        _SidebarMenuData('Meeting Scheduler', Icons.event_available_outlined),
+        _SidebarMenuData('Resource Booking', Icons.meeting_room_outlined),
+        _SidebarMenuData('Reminders', Icons.alarm_outlined),
+        _SidebarMenuData('Availability', Icons.access_time_outlined),
+        _SidebarMenuData('Event Notifications', Icons.notifications_none_outlined),
+        _SidebarMenuData('Shared Calendars', Icons.share_outlined),
+      ],
+    ),
+    _SidebarGroupData(
+      title: 'Integration Service',
+      icon: Icons.hub_outlined,
+      children: const [
+        _SidebarMenuData('API Mgmt.', Icons.api_outlined),
+        _SidebarMenuData('Third-Party Integrations', Icons.extension_outlined),
+        _SidebarMenuData('Webhooks', Icons.link_outlined),
+        _SidebarMenuData('Event Streaming', Icons.sync_alt_outlined),
+        _SidebarMenuData('Data Transformation', Icons.transform_outlined),
+        _SidebarMenuData('Connectors (Google, Outlook)', Icons.settings_input_component_outlined),
+        _SidebarMenuData('Data Sync (ERP, Bank, Payment)', Icons.sync_outlined),
+        _SidebarMenuData('Integration Logs', Icons.history_outlined),
+      ],
+    ),
+    _SidebarGroupData(
+      title: 'Search Service',
+      icon: Icons.search_outlined,
+      children: const [
+        _SidebarMenuData('Global Search', Icons.travel_explore_outlined),
+        _SidebarMenuData('Index Mgmt.', Icons.storage_outlined),
+        _SidebarMenuData('Search Analytics', Icons.query_stats_outlined),
+        _SidebarMenuData('Autocomplete', Icons.auto_awesome_outlined),
+        _SidebarMenuData('Relevance Ranking', Icons.sort_outlined),
+        _SidebarMenuData('Saved Searches', Icons.bookmark_outlined),
+        _SidebarMenuData('Multi-Tenant Index', Icons.dns_outlined),
+        _SidebarMenuData('Synonyms', Icons.compare_arrows_outlined),
+        _SidebarMenuData('Suggestion Engine', Icons.lightbulb_outlined),
+      ],
+    ),
+    _SidebarGroupData(
+      title: 'Security & Compliance Service',
+      icon: Icons.shield_outlined,
+      children: const [
+        _SidebarMenuData('Audit Logs', Icons.fact_check_outlined),
+        _SidebarMenuData('Activity Tracking', Icons.timeline_outlined),
+        _SidebarMenuData('Compliance Reports', Icons.gavel_outlined),
+        _SidebarMenuData('Data Retention', Icons.archive_outlined),
+        _SidebarMenuData('Policy Mgmt.', Icons.policy_outlined),
+        _SidebarMenuData('Threat Detection', Icons.warning_amber_outlined),
+        _SidebarMenuData('Vulnerability Mgmt.', Icons.bug_report_outlined),
+        _SidebarMenuData('Encryption & Key Mgmt.', Icons.enhanced_encryption_outlined),
+        _SidebarMenuData('Security Alerts', Icons.notification_important_outlined),
+      ],
+    ),
+  ];
+
+  // Tracks which expandable sidebar groups are currently open.
+  final Set<String> expandedGroups = {};
+
+  // ============================================================
+  // DASHBOARD DATA (would normally come from an API)
+  // ============================================================
+
+  bool isRefreshing = false;
+
+  final List<Map<String, String>> securityAlerts = const [
+    {
+      'title': '27 licenses expiring within 30 days',
+      'subtitle': 'Review renewals before Sep 22.',
+      'level': 'warning',
+    },
+    {
+      'title': '3 organizations awaiting activation approval',
+      'subtitle': 'Submitted via self-signup, pending review.',
+      'level': 'info',
+    },
+    {
+      'title': 'Unusual login pattern detected',
+      'subtitle': 'Delta Retail Group — 3 logins from new locations.',
+      'level': 'danger',
+    },
+  ];
+
+  final List<Map<String, String>> recentLogins = const [
+    {
+      'title': 'Ana Ferreira signed in from Lisbon, PT',
+      'subtitle': '18 minutes ago',
+      'status': 'ok',
+    },
+    {
+      'title': 'Unrecognized device signed in to Delta Retail Group',
+      'subtitle': '52 minutes ago',
+      'status': 'warning',
+    },
+    {
+      'title': 'sriram (Super Admin) signed in',
+      'subtitle': '3 hours ago',
+      'status': 'ok',
+    },
+    {
+      'title': 'sriram (Super Admin) signed in',
+      'subtitle': '3 hours ago',
+      'status': 'ok',
+    },
+    {
+      'title': '5 failed attempts on account j.mehta@acmecorp.com — locked',
+      'subtitle': '5 hours ago',
+      'status': 'danger',
+    },
+  ];
 
   // ============================================================
   // BUILD
@@ -78,64 +396,32 @@ class _LandingPageState extends State<LandingPage> {
   }
 
   // ============================================================
-  // SIDEBAR
+  // SIDEBAR  (matches the Stackly reference screenshot)
   // ============================================================
 
   Widget _buildSidebar() {
     return Container(
-      width: 285,
+      width: 260,
       color: sidebarColor,
       child: Column(
         children: [
           // ======================================================
-          // FIXED LOGO
+          // LOGO
           // ======================================================
 
           Padding(
-            padding: const EdgeInsets.fromLTRB(
-              22,
-              24,
-              20,
-              20,
-            ),
+            padding: const EdgeInsets.fromLTRB(20, 26, 20, 16),
             child: Row(
               children: [
-                Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    color: primaryBlue,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.cloud_outlined,
+                _logoMark(),
+                const SizedBox(width: 10),
+                const Text(
+                  'STACKLY',
+                  style: TextStyle(
                     color: Colors.white,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 11),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'OneCloud',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      SizedBox(height: 2),
-                      Text(
-                        'Enterprise Platform',
-                        style: TextStyle(
-                          color: Color(0xFF8D9BB8),
-                          fontSize: 10,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
+                    fontSize: 19,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.3,
                   ),
                 ),
               ],
@@ -143,51 +429,42 @@ class _LandingPageState extends State<LandingPage> {
           ),
 
           // ======================================================
-          // DASHBOARD
+          // "PLATFORM ADMINISTRATION" BADGE
           // ======================================================
 
           Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12,
-            ),
-            child: _sidebarSimpleItem(
-              icon: Icons.dashboard_outlined,
-              title: 'Dashboard',
-              selected: selectedMenu == 'Dashboard',
-              onTap: () {
-                setState(() {
-                  selectedMenu = 'Dashboard';
-                });
-              },
-            ),
-          ),
-
-          const SizedBox(height: 17),
-
-          // ======================================================
-          // HEADING
-          // ======================================================
-
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 22),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Align(
               alignment: Alignment.centerLeft,
-              child: Text(
-                'DOMAIN MICROSERVICES',
-                style: TextStyle(
-                  color: Color(0xFF61708F),
-                  fontSize: 10,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.1,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: primaryBlue.withOpacity(0.18),
+                  borderRadius: BorderRadius.circular(5),
+                  border: Border.all(
+                    color: primaryBlue.withOpacity(0.4),
+                  ),
+                ),
+                child: const Text(
+                  'PLATFORM ADMINISTRATION',
+                  style: TextStyle(
+                    color: Color(0xFF6FA0FF),
+                    fontSize: 8.5,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.6,
+                  ),
                 ),
               ),
             ),
           ),
 
-          const SizedBox(height: 9),
+          const SizedBox(height: 22),
 
           // ======================================================
-          // SERVICE CONTENT SCROLL
+          // SCROLLABLE MENU
           // ======================================================
 
           Expanded(
@@ -203,533 +480,43 @@ class _LandingPageState extends State<LandingPage> {
                   bottom: 20,
                 ),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // ==================================================
-                    // 1. PLATFORM ADMINISTRATION
-                    // ==================================================
-
-                    _sidebarExpandableItem(
-                      icon: Icons.admin_panel_settings_outlined,
-                      title: 'Platform Administration',
-                      expanded: platformExpanded,
-                      onTap: () {
-                        setState(() {
-                          platformExpanded = !platformExpanded;
-                        });
-                      },
-                      onArrowTap: () {
-                        setState(() {
-                          platformExpanded = !platformExpanded;
-                        });
-                      },
+                    _sidebarSectionLabel('SUPER ADMIN MANAGEMENT'),
+                    const SizedBox(height: 8),
+                    for (final item in superAdminMenu)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 3),
+                        child: _sidebarMenuItem(item),
+                      ),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 3),
+                      child: _sidebarGroupItem(platformAdminGroup),
                     ),
-                    if (platformExpanded)
-                      _buildSubItems([
-                        'Global Settings',
-                        'Platform Config',
-                        'License Management',
-                        'Feature Mgmt.',
-                        'Resource Mgmt.',
-                        'System Health',
-                        'Tenant Templates',
-                      ]),
-
-                    // ==================================================
-                    // 2. HRMS
-                    // ==================================================
-
-                    _sidebarExpandableItem(
-                      icon: Icons.people_outline,
-                      title: 'HRMS Service',
-                      expanded: hrmsExpanded,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                const HrmsServicePage(),
-                          ),
-                        );
-                      },
-                      onArrowTap: () {
-                        setState(() {
-                          hrmsExpanded = !hrmsExpanded;
-                        });
-                      },
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 3),
+                      child: _sidebarGroupItem(hrmsGroup),
                     ),
 
-                    if (hrmsExpanded)
-                      _buildSubItems([
-                        'Employee Management',
-                        'Attendance',
-                        'Leave',
-                        'Payroll',
-                        'Recruitment',
-                        'Performance',
-                        'Learning',
-                        'ESS / MSS',
-                        'Asset Management',
-                      ]),
+                    const SizedBox(height: 20),
 
-                    // ==================================================
-                    // 3. CRM
-                    // ==================================================
+                    _sidebarSectionLabel('DOMAIN MICROSERVICES'),
+                    const SizedBox(height: 8),
+                    for (final group in domainGroups)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 3),
+                        child: _sidebarGroupItem(group),
+                      ),
 
-                    _sidebarExpandableItem(
-                      icon: Icons.groups_outlined,
-                      title: 'CRM Services',
-                      expanded: crmExpanded,
-                      onTap: () {
-                        setState(() {
-                          crmExpanded = !crmExpanded;
-                        });
-                      },
-                      onArrowTap: () {
-                        setState(() {
-                          crmExpanded = !crmExpanded;
-                        });
-                      },
-                    ),
+                    const SizedBox(height: 20),
 
-                    if (crmExpanded)
-                      _buildSubItems([
-                        'Leads',
-                        'Opportunities',
-                        'Accounts',
-                        'Contacts',
-                        'Activities',
-                        'Pipeline',
-                        'Quotations',
-                        'Campaigns',
-                        'Customer Support',
-                      ]),
-
-                    // ==================================================
-                    // 4. ERP
-                    // ==================================================
-
-                    _sidebarExpandableItem(
-                      icon: Icons.business_center_outlined,
-                      title: 'ERP Services',
-                      expanded: erpExpanded,
-                      onTap: () {
-                        setState(() {
-                          erpExpanded = !erpExpanded;
-                        });
-                      },
-                      onArrowTap: () {
-                        setState(() {
-                          erpExpanded = !erpExpanded;
-                        });
-                      },
-                    ),
-
-                    if (erpExpanded)
-                      _buildSubItems([
-                        'Inventory',
-                        'Procurement',
-                        'Production',
-                        'Sales Orders',
-                        'Dispatch',
-                        'Asset Management',
-                        'Maintenance',
-                        'Vendors',
-                      ]),
-
-                    // ==================================================
-                    // 5. FINANCE
-                    // ==================================================
-
-                    _sidebarExpandableItem(
-                      icon: Icons.account_balance_outlined,
-                      title: 'Finance & Accounting Service',
-                      expanded: financeExpanded,
-                      onTap: () {
-                        setState(() {
-                          financeExpanded = !financeExpanded;
-                        });
-                      },
-                      onArrowTap: () {
-                        setState(() {
-                          financeExpanded = !financeExpanded;
-                        });
-                      },
-                    ),
-
-                    if (financeExpanded)
-                      _buildSubItems([
-                        'General Ledger',
-                        'Accounts Payable',
-                        'Accounts Receivable',
-                        'Bank Management',
-                        'Budgeting',
-                        'Costing',
-                        'Financial Reports',
-                        'Reconciliation',
-                        'Multi-Currency',
-                      ]),
-
-                    // ==================================================
-                    // 6. WORKFLOW
-                    // ==================================================
-
-                    _sidebarExpandableItem(
-                      icon: Icons.account_tree_outlined,
-                      title: 'Workflow & Automation Service',
-                      expanded: workflowExpanded,
-                      onTap: () {
-                        setState(() {
-                          workflowExpanded = !workflowExpanded;
-                        });
-                      },
-                      onArrowTap: () {
-                        setState(() {
-                          workflowExpanded = !workflowExpanded;
-                        });
-                      },
-                    ),
-
-                    if (workflowExpanded)
-                      _buildSubItems([
-                        'Workflow Builder',
-                        'Approvals',
-                        'Business Rules',
-                        'Process Automation',
-                        'Task Management',
-                        'Triggers',
-                        'SLAs & Escalations',
-                        'Process Monitoring',
-                        'Workflow Templates',
-                      ]),
-
-                    // ==================================================
-                    // 7. DOCUMENT MANAGEMENT
-                    // ==================================================
-
-                    _sidebarExpandableItem(
-                      icon: Icons.description_outlined,
-                      title: 'Document Management Service',
-                      expanded: documentExpanded,
-                      onTap: () {
-                        setState(() {
-                          documentExpanded = !documentExpanded;
-                        });
-                      },
-                      onArrowTap: () {
-                        setState(() {
-                          documentExpanded = !documentExpanded;
-                        });
-                      },
-                    ),
-
-                    if (documentExpanded)
-                      _buildSubItems([
-                        'Document Repository',
-                        'Versioning',
-                        'File Upload / Download',
-                        'Access Control',
-                        'Document Templates',
-                        'Tagging & Search',
-                        'Retention Policies',
-                        'Audit Trails',
-                        'OCR Integration',
-                      ]),
-
-                    // ==================================================
-                    // 8. SUBSCRIPTION
-                    // ==================================================
-
-                    _sidebarExpandableItem(
-                      icon: Icons.subscriptions_outlined,
-                      title: 'Subscription Service',
-                      expanded: subscriptionExpanded,
-                      onTap: () {
-                        setState(() {
-                          subscriptionExpanded = !subscriptionExpanded;
-                        });
-                      },
-                      onArrowTap: () {
-                        setState(() {
-                          subscriptionExpanded = !subscriptionExpanded;
-                        });
-                      },
-                    ),
-
-                    if (subscriptionExpanded)
-                      _buildSubItems([
-                        'Plans & Features',
-                        'Tenant Subscriptions',
-                        'Usage & Quotas',
-                        'Payment Tracking',
-                        'License Allocation',
-                        'License Keys',
-                        'Renewals',
-                        'Trial Management',
-                        'Billing Integration',
-                      ]),
-
-                    // ==================================================
-                    // 9. REVENUE
-                    // ==================================================
-
-                    _sidebarExpandableItem(
-                      icon: Icons.monetization_on_outlined,
-                      title: 'Revenue Service',
-                      expanded: revenueExpanded,
-                      onTap: () {
-                        setState(() {
-                          revenueExpanded = !revenueExpanded;
-                        });
-                      },
-                      onArrowTap: () {
-                        setState(() {
-                          revenueExpanded = !revenueExpanded;
-                        });
-                      },
-                    ),
-
-                    if (revenueExpanded)
-                      _buildSubItems([
-                        'Revenue Tracking',
-                        'Usage Analytics',
-                        'Forecasting',
-                        'Revenue Reports',
-                        'Revenue Recognition',
-                        'Commission',
-                        'Financial Analytics',
-                        'Invoicing',
-                        'Integration',
-                      ]),
-
-                    // ==================================================
-                    // 10. REPORTING
-                    // ==================================================
-
-                    _sidebarExpandableItem(
-                      icon: Icons.analytics_outlined,
-                      title: 'Reporting & BI Service',
-                      expanded: reportingExpanded,
-                      onTap: () {
-                        setState(() {
-                          reportingExpanded = !reportingExpanded;
-                        });
-                      },
-                      onArrowTap: () {
-                        setState(() {
-                          reportingExpanded = !reportingExpanded;
-                        });
-                      },
-                    ),
-
-                    if (reportingExpanded)
-                      _buildSubItems([
-                        'Standard Reports',
-                        'Ad-hoc Reports',
-                        'Data Exploration',
-                        'BI Management',
-                        'Data Export',
-                        'Scheduled Reports',
-                        'Data Visualization',
-                        'Self-Service Analytics',
-                      ]),
-
-                    // ==================================================
-                    // 11. ENTERPRISE AI
-                    // ==================================================
-
-                    _sidebarExpandableItem(
-                      icon: Icons.auto_awesome_outlined,
-                      title: 'Enterprise AI Service',
-                      expanded: aiExpanded,
-                      onTap: () {
-                        setState(() {
-                          aiExpanded = !aiExpanded;
-                        });
-                      },
-                      onArrowTap: () {
-                        setState(() {
-                          aiExpanded = !aiExpanded;
-                        });
-                      },
-                    ),
-
-                    if (aiExpanded)
-                      _buildSubItems([
-                        'AI Models',
-                        'AI Chat / Copilot',
-                        'Document AI / OCR',
-                        'Predictive Analytics',
-                        'Recommendations',
-                        'AI Workflows',
-                        'Model Management',
-                        'Prompt Engineering',
-                        'AI Usage Logs',
-                      ]),
-
-                    // ==================================================
-                    // 12. NOTIFICATION
-                    // ==================================================
-
-                    _sidebarExpandableItem(
-                      icon: Icons.notifications_none_outlined,
-                      title: 'Notification Service',
-                      expanded: notificationExpanded,
-                      onTap: () {
-                        setState(() {
-                          notificationExpanded = !notificationExpanded;
-                        });
-                      },
-                      onArrowTap: () {
-                        setState(() {
-                          notificationExpanded = !notificationExpanded;
-                        });
-                      },
-                    ),
-
-                    if (notificationExpanded)
-                      _buildSubItems([
-                        'In-App Notifications',
-                        'Email Notifications',
-                        'SMS Notifications',
-                        'Push Notifications',
-                        'Templates',
-                        'Preferences',
-                        'Schedules',
-                        'Delivery Tracking',
-                        'Multi-Channel',
-                      ]),
-
-                    // ==================================================
-                    // 13. CALENDAR
-                    // ==================================================
-
-                    _sidebarExpandableItem(
-                      icon: Icons.calendar_month_outlined,
-                      title: 'Calendar Service',
-                      expanded: calendarExpanded,
-                      onTap: () {
-                        setState(() {
-                          calendarExpanded = !calendarExpanded;
-                        });
-                      },
-                      onArrowTap: () {
-                        setState(() {
-                          calendarExpanded = !calendarExpanded;
-                        });
-                      },
-                    ),
-
-                    if (calendarExpanded)
-                      _buildSubItems([
-                        'User Calendars',
-                        'Team Calendars',
-                        'Meeting Scheduler',
-                        'Resource Booking',
-                        'Reminders',
-                        'Notifications',
-                        'Google / Outlook',
-                        'Availability',
-                        'Event Notifications',
-                        'Shared Calendars',
-                      ]),
-
-                    // ==================================================
-                    // 14. INTEGRATION
-                    // ==================================================
-
-                    _sidebarExpandableItem(
-                      icon: Icons.integration_instructions_outlined,
-                      title: 'Integration Service',
-                      expanded: integrationExpanded,
-                      onTap: () {
-                        setState(() {
-                          integrationExpanded = !integrationExpanded;
-                        });
-                      },
-                      onArrowTap: () {
-                        setState(() {
-                          integrationExpanded = !integrationExpanded;
-                        });
-                      },
-                    ),
-
-                    if (integrationExpanded)
-                      _buildSubItems([
-                        'API Management',
-                        'Third-Party Integrations',
-                        'Webhooks',
-                        'Event Streaming',
-                        'Data Transformation',
-                        'ETL / Data Sync',
-                        'Connectors',
-                        'Integration Logs',
-                      ]),
-
-                    // ==================================================
-                    // 15. SEARCH
-                    // ==================================================
-
-                    _sidebarExpandableItem(
-                      icon: Icons.search_outlined,
-                      title: 'Search Service',
-                      expanded: searchExpanded,
-                      onTap: () {
-                        setState(() {
-                          searchExpanded = !searchExpanded;
-                        });
-                      },
-                      onArrowTap: () {
-                        setState(() {
-                          searchExpanded = !searchExpanded;
-                        });
-                      },
-                    ),
-
-                    if (searchExpanded)
-                      _buildSubItems([
-                        'Global Search',
-                        'Index Management',
-                        'Search Analytics',
-                        'Autocomplete',
-                        'Relevance Ranking',
-                        'Saved Searches',
-                        'Multi-Tenant Index',
-                        'Synonyms',
-                        'Suggestion Engine',
-                      ]),
-
-                    // ==================================================
-                    // 16. SECURITY
-                    // ==================================================
-
-                    _sidebarExpandableItem(
-                      icon: Icons.security_outlined,
-                      title: 'Security & Compliance Service',
-                      expanded: securityExpanded,
-                      onTap: () {
-                        setState(() {
-                          securityExpanded = !securityExpanded;
-                        });
-                      },
-                      onArrowTap: () {
-                        setState(() {
-                          securityExpanded = !securityExpanded;
-                        });
-                      },
-                    ),
-
-                    if (securityExpanded)
-                      _buildSubItems([
-                        'Audit Logs',
-                        'Activity Tracking',
-                        'Compliance Reports',
-                        'Data Retention',
-                        'Policy Management',
-                        'Threat Detection',
-                        'Vulnerability Management',
-                        'Encryption & Key Management',
-                        'Security Alerts',
-                      ]),
+                    _sidebarSectionLabel('ORGANIZATION'),
+                    const SizedBox(height: 8),
+                    for (final item in organizationMenu)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 3),
+                        child: _sidebarMenuItem(item),
+                      ),
                   ],
                 ),
               ),
@@ -737,21 +524,340 @@ class _LandingPageState extends State<LandingPage> {
           ),
 
           // ======================================================
-          // FIXED LOGOUT
+          // BOTTOM: LANGUAGE / LOGOUT / PROFILE
           // ======================================================
 
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              12,
-              5,
-              12,
-              15,
+          _buildSidebarFooter(),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // LOGO MARK (uses asset, falls back to icon automatically)
+  // ============================================================
+
+  Widget _logoMark() {
+    return Container(
+      width: 38,
+      height: 38,
+      decoration: BoxDecoration(
+        color: primaryBlue,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Image.asset(
+        kLogoAssetPath,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          // Asset not added to the project yet — show a fallback icon
+          // instead of crashing.
+          return const Icon(
+            Icons.cloud_outlined,
+            color: Colors.white,
+            size: 20,
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _sidebarSectionLabel(String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Color(0xFF61708F),
+          fontSize: 9.5,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 1.0,
+        ),
+      ),
+    );
+  }
+
+  Widget _sidebarMenuItem(_SidebarMenuData item) {
+    final bool selected = selectedMenu == item.title;
+    return InkWell(
+      onTap: () {
+        setState(() => selectedMenu = item.title);
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 42),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? primaryBlue : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              item.icon,
+              size: 18,
+              color: selected ? Colors.white : const Color(0xFF8B9AB7),
             ),
-            child: _sidebarSimpleItem(
-              icon: Icons.logout_outlined,
-              title: 'Logout',
-              selected: false,
-              onTap: () {},
+            const SizedBox(width: 11),
+            Expanded(
+              child: Text(
+                item.title,
+                style: TextStyle(
+                  color: selected ? Colors.white : const Color(0xFFB2BCD0),
+                  fontSize: 12,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ============================================================
+  // EXPANDABLE SIDEBAR GROUP (heading + sub-headings, with icons)
+  // e.g. "HRMS Service" -> Employee Mgmt., Attendance, Leave, ...
+  // ============================================================
+
+  Widget _sidebarGroupItem(_SidebarGroupData group) {
+    final bool expanded = expandedGroups.contains(group.title);
+    // Group is "active" if the heading itself or any of its
+    // children is the currently selected menu item.
+    final bool groupActive = selectedMenu == group.title ||
+        group.children.any((c) => c.title == selectedMenu);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ---------------- Heading row ----------------
+        InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: () {
+            setState(() {
+              selectedMenu = group.title;
+              if (expanded) {
+                expandedGroups.remove(group.title);
+              } else {
+                expandedGroups.add(group.title);
+              }
+            });
+          },
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 42),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: selectedMenu == group.title
+                  ? primaryBlue.withOpacity(0.12)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  group.icon,
+                  size: 18,
+                  color: groupActive ? Colors.white : const Color(0xFF8B9AB7),
+                ),
+                const SizedBox(width: 11),
+                Expanded(
+                  child: Text(
+                    group.title,
+                    style: TextStyle(
+                      color: groupActive ? Colors.white : const Color(0xFFB2BCD0),
+                      fontSize: 12,
+                      fontWeight: groupActive ? FontWeight.w700 : FontWeight.w500,
+                    ),
+                  ),
+                ),
+                Icon(
+                  expanded ? Icons.expand_less : Icons.expand_more,
+                  size: 18,
+                  color: const Color(0xFF71819F),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // ---------------- Sub-heading list ----------------
+        AnimatedCrossFade(
+          duration: const Duration(milliseconds: 180),
+          crossFadeState:
+              expanded ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+          firstChild: Padding(
+            padding: const EdgeInsets.only(top: 3),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (final child in group.children)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 3),
+                    child: _sidebarSubMenuItem(child),
+                  ),
+              ],
+            ),
+          ),
+          secondChild: const SizedBox(width: double.infinity, height: 0),
+        ),
+      ],
+    );
+  }
+
+  // Sub-heading row: indented, with its own icon (instead of a bullet).
+  Widget _sidebarSubMenuItem(_SidebarMenuData item) {
+    final bool selected = selectedMenu == item.title;
+    return InkWell(
+      onTap: () {
+        setState(() => selectedMenu = item.title);
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 36),
+        padding: const EdgeInsets.only(left: 34, right: 12, top: 6, bottom: 6),
+        decoration: BoxDecoration(
+          color: selected ? primaryBlue : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              item.icon,
+              size: 15,
+              color: selected ? Colors.white : const Color(0xFF7C8AA6),
+            ),
+            const SizedBox(width: 9),
+            Expanded(
+              child: Text(
+                item.title,
+                style: TextStyle(
+                  color: selected ? Colors.white : const Color(0xFFA6B0C6),
+                  fontSize: 11.5,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ============================================================
+  // SIDEBAR FOOTER: LANGUAGE, LOGOUT, PROFILE
+  // ============================================================
+
+  Widget _buildSidebarFooter() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+      decoration: const BoxDecoration(
+        border: Border(
+          top: BorderSide(color: Color(0xFF16223F), width: 1),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Language selector
+          InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: _showLanguagePicker,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                children: [
+                  const Icon(Icons.language, size: 18, color: Color(0xFF8B9AB7)),
+                  const SizedBox(width: 11),
+                  const Expanded(
+                    child: Text(
+                      'Language',
+                      style: TextStyle(
+                        color: Color(0xFFB2BCD0),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    selectedLanguage,
+                    style: const TextStyle(
+                      color: Color(0xFF71819F),
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.expand_more, size: 16, color: Color(0xFF71819F)),
+                ],
+              ),
+            ),
+          ),
+
+          // Logout
+          InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () => _confirmLogout(context),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                children: [
+                  Icon(Icons.logout_outlined, size: 18, color: Color(0xFF8B9AB7)),
+                  SizedBox(width: 11),
+                  Text(
+                    'Log out',
+                    style: TextStyle(
+                      color: Color(0xFFB2BCD0),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          // Profile card
+          InkWell(
+            borderRadius: BorderRadius.circular(10),
+            onTap: _showProfileMenu,
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0D1E4A),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  _profileAvatar(),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'sriram',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Super Admin',
+                          style: TextStyle(
+                            color: Color(0xFF8D9BB8),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -759,478 +865,309 @@ class _LandingPageState extends State<LandingPage> {
     );
   }
 
-  // ============================================================
-  // SUB ITEMS
-  // ============================================================
+  Widget _profileAvatar() {
+    return Container(
+      width: 34,
+      height: 34,
+      decoration: const BoxDecoration(
+        color: primaryBlue,
+        shape: BoxShape.circle,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Image.asset(
+        kAvatarAssetPath,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return const Center(
+            child: Text(
+              'RK',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
 
-  Widget _buildSubItems(List<String> items) {
-    // NOTE: every key below must match, character-for-character, one of the
-    // strings passed into a _buildSubItems([...]) call above. If a label is
-    // spelled differently here than it is up there, subItemIcons[item]
-    // returns null and that row silently renders with no icon — that was
-    // the bug causing "half the icons are missing".
-    final Map<String, IconData> subItemIcons = {
-      // ==========================================================
-      // 1. PLATFORM ADMINISTRATION
-      // ==========================================================
-      'Global Settings': Icons.settings_outlined,
-      'Platform Config': Icons.tune_outlined,
-      'License Management': Icons.vpn_key_outlined,
-      'Feature Mgmt.': Icons.extension_outlined,
-      'Resource Mgmt.': Icons.inventory_2_outlined,
-      'System Health': Icons.health_and_safety_outlined,
-      'Tenant Templates': Icons.dashboard_customize_outlined,
-
-      // ==========================================================
-      // 2. HRMS
-      // ==========================================================
-      'Employee Management': Icons.people_outline,
-      'Attendance': Icons.access_time_outlined,
-      'Leave': Icons.event_available_outlined,
-      'Payroll': Icons.payments_outlined,
-      'Recruitment': Icons.person_add_alt_outlined,
-      'Performance': Icons.trending_up_outlined,
-      'Learning': Icons.school_outlined,
-      'ESS / MSS': Icons.account_circle_outlined,
-      'Asset Management': Icons.inventory_2_outlined, // shared with ERP
-
-      // ==========================================================
-      // 3. CRM
-      // ==========================================================
-      'Leads': Icons.person_search_outlined,
-      'Opportunities': Icons.lightbulb_outline,
-      'Accounts': Icons.account_balance_outlined,
-      'Contacts': Icons.contacts_outlined,
-      'Activities': Icons.task_alt_outlined,
-      'Pipeline': Icons.filter_alt_outlined,
-      'Quotations': Icons.request_quote_outlined,
-      'Campaigns': Icons.campaign_outlined,
-      'Customer Support': Icons.support_agent_outlined,
-
-      // ==========================================================
-      // 4. ERP
-      // ==========================================================
-      'Inventory': Icons.inventory_2_outlined,
-      'Procurement': Icons.shopping_cart_outlined,
-      'Production': Icons.precision_manufacturing_outlined,
-      'Sales Orders': Icons.point_of_sale_outlined,
-      'Dispatch': Icons.local_shipping_outlined,
-      // 'Asset Management' already defined above
-      'Maintenance': Icons.build_outlined,
-      'Vendors': Icons.storefront_outlined,
-
-      // ==========================================================
-      // 5. FINANCE & ACCOUNTING
-      // ==========================================================
-      'General Ledger': Icons.account_balance_wallet_outlined,
-      'Accounts Payable': Icons.payments_outlined,
-      'Accounts Receivable': Icons.receipt_long_outlined,
-      'Bank Management': Icons.account_balance_outlined,
-      'Budgeting': Icons.pie_chart_outline,
-      'Costing': Icons.calculate_outlined,
-      'Financial Reports': Icons.bar_chart_outlined,
-      'Reconciliation': Icons.fact_check_outlined,
-      'Multi-Currency': Icons.currency_exchange_outlined,
-
-      // ==========================================================
-      // 6. WORKFLOW & AUTOMATION
-      // ==========================================================
-      'Workflow Builder': Icons.account_tree_outlined,
-      'Approvals': Icons.approval_outlined,
-      'Business Rules': Icons.rule_outlined,
-      'Process Automation': Icons.auto_awesome_outlined,
-      'Task Management': Icons.task_alt_outlined,
-      'Triggers': Icons.bolt_outlined,
-      'SLAs & Escalations': Icons.timer_outlined,
-      'Process Monitoring': Icons.monitor_heart_outlined,
-      'Workflow Templates': Icons.dashboard_customize_outlined,
-
-      // ==========================================================
-      // 7. DOCUMENT MANAGEMENT
-      // ==========================================================
-      'Document Repository': Icons.folder_open_outlined,
-      'Versioning': Icons.history_edu_outlined,
-      'File Upload / Download': Icons.upload_file_outlined,
-      'Access Control': Icons.lock_outline,
-      'Document Templates': Icons.description_outlined,
-      'Tagging & Search': Icons.label_outline,
-      'Retention Policies': Icons.archive_outlined,
-      'Audit Trails': Icons.fact_check_outlined,
-      'OCR Integration': Icons.document_scanner_outlined,
-
-      // ==========================================================
-      // 8. SUBSCRIPTION
-      // ==========================================================
-      'Plans & Features': Icons.layers_outlined,
-      'Tenant Subscriptions': Icons.card_membership_outlined,
-      'Usage & Quotas': Icons.speed_outlined,
-      'Payment Tracking': Icons.payment_outlined,
-      'License Allocation': Icons.assignment_ind_outlined,
-      'License Keys': Icons.vpn_key_outlined,
-      'Renewals': Icons.autorenew_outlined,
-      'Trial Management': Icons.hourglass_bottom_outlined,
-      'Billing Integration': Icons.receipt_outlined,
-
-      // ==========================================================
-      // 9. REVENUE
-      // ==========================================================
-      'Revenue Tracking': Icons.trending_up_outlined,
-      'Usage Analytics': Icons.analytics_outlined,
-      'Forecasting': Icons.insights_outlined,
-      'Revenue Reports': Icons.bar_chart_outlined,
-      'Revenue Recognition': Icons.fact_check_outlined,
-      'Commission': Icons.percent_outlined,
-      'Financial Analytics': Icons.query_stats_outlined,
-      'Invoicing': Icons.receipt_outlined,
-      'Integration': Icons.integration_instructions_outlined,
-
-      // ==========================================================
-      // 10. REPORTING & BI
-      // ==========================================================
-      'Standard Reports': Icons.description_outlined,
-      'Ad-hoc Reports': Icons.article_outlined,
-      'Data Exploration': Icons.explore_outlined,
-      'BI Management': Icons.dashboard_customize_outlined,
-      'Data Export': Icons.file_download_outlined,
-      'Scheduled Reports': Icons.schedule_outlined,
-      'Data Visualization': Icons.pie_chart_outline,
-      'Self-Service Analytics': Icons.analytics_outlined,
-
-      // ==========================================================
-      // 11. ENTERPRISE AI
-      // ==========================================================
-      'AI Models': Icons.model_training_outlined,
-      'AI Chat / Copilot': Icons.smart_toy_outlined,
-      'Document AI / OCR': Icons.document_scanner_outlined,
-      'Predictive Analytics': Icons.query_stats_outlined,
-      'Recommendations': Icons.recommend_outlined,
-      'AI Workflows': Icons.auto_awesome_motion_outlined,
-      'Model Management': Icons.settings_suggest_outlined,
-      'Prompt Engineering': Icons.edit_note_outlined,
-      'AI Usage Logs': Icons.list_alt_outlined,
-
-      // ==========================================================
-      // 12. NOTIFICATION
-      // ==========================================================
-      'In-App Notifications': Icons.notifications_outlined,
-      'Email Notifications': Icons.email_outlined,
-      'SMS Notifications': Icons.sms_outlined,
-      'Push Notifications': Icons.notifications_active_outlined,
-      'Templates': Icons.article_outlined,
-      'Preferences': Icons.tune_outlined,
-      'Schedules': Icons.schedule_outlined,
-      'Delivery Tracking': Icons.local_shipping_outlined,
-      'Multi-Channel': Icons.hub_outlined,
-
-      // ==========================================================
-      // 13. CALENDAR
-      // ==========================================================
-      'User Calendars': Icons.calendar_month_outlined,
-      'Team Calendars': Icons.groups_outlined,
-      'Meeting Scheduler': Icons.event_outlined,
-      'Resource Booking': Icons.event_available_outlined,
-      'Reminders': Icons.alarm_outlined,
-      'Notifications': Icons.notifications_none_outlined,
-      'Google / Outlook': Icons.sync_outlined,
-      'Availability': Icons.access_time_outlined,
-      'Event Notifications': Icons.notifications_active_outlined,
-      'Shared Calendars': Icons.share_outlined,
-
-      // ==========================================================
-      // 14. INTEGRATION
-      // ==========================================================
-      'API Management': Icons.api_outlined,
-      'Third-Party Integrations': Icons.integration_instructions_outlined,
-      'Webhooks': Icons.webhook_outlined,
-      'Event Streaming': Icons.stream_outlined,
-      'Data Transformation': Icons.transform_outlined,
-      'ETL / Data Sync': Icons.sync_alt_outlined,
-      'Connectors': Icons.cable_outlined,
-      'Integration Logs': Icons.list_alt_outlined,
-
-      // ==========================================================
-      // 15. SEARCH
-      // ==========================================================
-      'Global Search': Icons.search_outlined,
-      'Index Management': Icons.storage_outlined,
-      'Search Analytics': Icons.analytics_outlined,
-      'Autocomplete': Icons.text_fields_outlined,
-      'Relevance Ranking': Icons.sort_outlined,
-      'Saved Searches': Icons.bookmark_outline,
-      'Multi-Tenant Index': Icons.dns_outlined,
-      'Synonyms': Icons.compare_arrows_outlined,
-      'Suggestion Engine': Icons.tips_and_updates_outlined,
-
-      // ==========================================================
-      // 16. SECURITY & COMPLIANCE
-      // ==========================================================
-      'Audit Logs': Icons.fact_check_outlined,
-      'Activity Tracking': Icons.timeline_outlined,
-      'Compliance Reports': Icons.gavel_outlined,
-      'Data Retention': Icons.archive_outlined,
-      'Policy Management': Icons.policy_outlined,
-      'Threat Detection': Icons.shield_outlined,
-      'Vulnerability Management': Icons.bug_report_outlined,
-      'Encryption & Key Management': Icons.enhanced_encryption_outlined,
-      'Security Alerts': Icons.warning_amber_outlined,
-    };
-
-    return Column(
-      children: items.map((item) {
-        return _sidebarSubItem(
-          item,
-          selectedMenu == item,
-          () {
-            setState(() {
-              selectedMenu = item;
-            });
-          },
-          icon: subItemIcons[item],
+  void _showLanguagePicker() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        final languages = ['English', 'Hindi', 'Tamil', 'Spanish'];
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: Text(
+                  'Select language',
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
+                ),
+              ),
+              for (final lang in languages)
+                ListTile(
+                  title: Text(lang),
+                  trailing: selectedLanguage == lang
+                      ? const Icon(Icons.check, color: primaryBlue)
+                      : null,
+                  onTap: () {
+                    setState(() => selectedLanguage = lang);
+                    Navigator.of(context).pop();
+                  },
+                ),
+              const SizedBox(height: 8),
+            ],
+          ),
         );
-      }).toList(),
+      },
     );
   }
 
+  void _showProfileMenu() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Opening profile settings…'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+    // TODO: navigate to your real profile/account page.
+  }
+
   // ============================================================
-  // SIMPLE SIDEBAR ITEM (Dashboard / Logout — no expand arrow)
+  // LOGOUT FUNCTIONALITY
   // ============================================================
 
-  Widget _sidebarSimpleItem({
-    required IconData icon,
-    required String title,
-    required bool selected,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(9),
-      child: Container(
-        constraints: const BoxConstraints(
-          minHeight: 46,
-        ),
-        padding: const EdgeInsets.symmetric(
-          horizontal: 13,
-          vertical: 8,
-        ),
-        decoration: BoxDecoration(
-          color: selected
-              ? const Color(0xFF163B7A)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(9),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              color: selected
-                  ? Colors.white
-                  : const Color(0xFF8B9AB7),
-              size: 21,
+  Future<void> _confirmLogout(BuildContext context) async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          title: const Text(
+            'Log out?',
+            style: TextStyle(fontWeight: FontWeight.w800),
+          ),
+          content: const Text(
+            'You will be signed out of the OneCloud Enterprise Platform. '
+            'Any unsaved changes may be lost.',
+            style: TextStyle(fontSize: 13, color: Color(0xFF667085)),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancel'),
             ),
-
-            const SizedBox(width: 12),
-
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  color: selected
-                      ? Colors.white
-                      : const Color(0xFFB2BCD0),
-                  fontSize: 12,
-                  fontWeight:
-                      selected ? FontWeight.w700 : FontWeight.w500,
-                  height: 1.25,
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: redColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Logout'),
             ),
           ],
-        ),
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      _performLogout(context);
+    }
+  }
+
+  void _performLogout(BuildContext context) {
+    setState(() {
+      selectedMenu = 'Super Admin Dashboard';
+    });
+
+    // TODO: hook this up to your real auth/session logic, e.g.:
+    // await AuthService.instance.signOut();
+    // Navigator.of(context).pushAndRemoveUntil(
+    //   MaterialPageRoute(builder: (_) => const LoginPage()),
+    //   (route) => false,
+    // );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('You have been logged out.'),
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
 
   // ============================================================
-  // EXPANDABLE SIDEBAR ITEM
+  // PAGE ROUTING
   // ============================================================
-
-  Widget _sidebarExpandableItem({
-    required IconData icon,
-    required String title,
-    required bool expanded,
-    required VoidCallback onTap,
-    required VoidCallback onArrowTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(9),
-      child: Container(
-        constraints: const BoxConstraints(
-          minHeight: 46,
-        ),
-        padding: const EdgeInsets.symmetric(
-          horizontal: 13,
-          vertical: 8,
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              color: const Color(0xFF8B9AB7),
-              size: 21,
-            ),
-
-            const SizedBox(width: 12),
-
-            Expanded(
-              child: Text(
-                title,
-                style: const TextStyle(
-                  color: Color(0xFFB2BCD0),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  height: 1.25,
-                ),
-              ),
-            ),
-
-            InkWell(
-              onTap: onArrowTap,
-              borderRadius: BorderRadius.circular(20),
-              child: Padding(
-                padding: const EdgeInsets.all(3),
-                child: Icon(
-                  expanded
-                      ? Icons.keyboard_arrow_up
-                      : Icons.keyboard_arrow_down,
-                  color: const Color(0xFF71819F),
-                  size: 18,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  // Maps a sidebar selection to the page that should be shown.
+  // - 'Global Dashboard' and 'Platform Administration' already have
+  //   real page widgets (GlobalDashboardPage / PlatformAdministrationPage).
+  // - The other "Platform Administration" submenu items don't have
+  //   dedicated page files yet, so they render a labelled placeholder
+  //   for now. Replace `_placeholderPage(...)` in each case below
+  //   with your own page widget (e.g. `const PlatformConfigPage()`)
+  //   once it exists, exactly the way GlobalDashboardPage is wired.
+  Widget? _pageForSelectedMenu() {
+    switch (selectedMenu) {
+      case 'Global Dashboard':
+        return const GlobalDashboardPage();
+      case 'Platform Administration':
+        return const PlatformAdministrationPage();
+      case 'HRMS Service':
+        return _placeholderPage(
+          title: 'HRMS Service',
+          icon: Icons.groups_2_outlined,
+          description:
+              'HRMS overview — employee headcount, attendance summary, leave and payroll status at a glance.',
+        );
+      case 'Employee Mgmt.':
+        return _placeholderPage(
+          title: 'Employee Management',
+          icon: Icons.badge_outlined,
+          description: 'Manage employee profiles, roles and org structure here.',
+        );
+      case 'Attendance':
+        return _placeholderPage(
+          title: 'Attendance',
+          icon: Icons.event_available_outlined,
+          description: 'Track clock-ins, shifts and attendance records here.',
+        );
+      case 'Leave':
+        return _placeholderPage(
+          title: 'Leave',
+          icon: Icons.beach_access_outlined,
+          description: 'Manage leave requests, balances and approval workflows here.',
+        );
+      case 'Payroll':
+        return _placeholderPage(
+          title: 'Payroll',
+          icon: Icons.payments_outlined,
+          description: 'Run payroll cycles, payslips and salary adjustments here.',
+        );
+      case 'Recruitment':
+        return _placeholderPage(
+          title: 'Recruitment',
+          icon: Icons.person_search_outlined,
+          description: 'Manage job postings, candidates and hiring pipelines here.',
+        );
+      case 'Performance':
+        return _placeholderPage(
+          title: 'Performance',
+          icon: Icons.trending_up_outlined,
+          description: 'Track goals, reviews and performance ratings here.',
+        );
+      case 'Learning':
+        return _placeholderPage(
+          title: 'Learning',
+          icon: Icons.school_outlined,
+          description: 'Assign and track training courses and certifications here.',
+        );
+      case 'ESS / MSS':
+        return _placeholderPage(
+          title: 'ESS / MSS',
+          icon: Icons.how_to_reg_outlined,
+          description: 'Employee & manager self-service portals live here.',
+        );
+      case 'Asset Mgmt.':
+        return _placeholderPage(
+          title: 'Asset Management',
+          icon: Icons.inventory_2_outlined,
+          description: 'Track company assets issued to employees here.',
+        );
+      case 'Platform Configuration':
+        return _placeholderPage(
+          title: 'Platform Configuration',
+          icon: Icons.settings_outlined,
+          description:
+              'Manage global platform configuration here. Swap this out for your PlatformConfigurationPage widget.',
+        );
+      case 'Platform Branding':
+        return _placeholderPage(
+          title: 'Platform Branding',
+          icon: Icons.palette_outlined,
+          description:
+              'Customize platform branding — logos, colors and themes — here.',
+        );
+      case 'Feature Management':
+        return _placeholderPage(
+          title: 'Feature Management',
+          icon: Icons.extension_outlined,
+          description: 'Enable or disable platform features and flags here.',
+        );
+      case 'License Management':
+        return _placeholderPage(
+          title: 'License Management',
+          icon: Icons.description_outlined,
+          description:
+              'Manage licenses, renewals and seat allocation here.',
+        );
+      case 'Settings':
+        return _placeholderPage(
+          title: 'Settings',
+          icon: Icons.apps_outlined,
+          description: 'General application settings live here.',
+        );
+      default:
+        // No dedicated page for this selection — fall back to the
+        // default Super Admin Dashboard content.
+        return null;
+    }
   }
 
-  // ============================================================
-  // COLORED SIDEBAR ITEM
-  // ============================================================
-
-  Widget _sidebarItem({
-    required IconData icon,
+  // Simple placeholder page used for submenu items that don't have a
+  // dedicated page widget yet. Replace calls to this with a real page
+  // as you build each one out.
+  Widget _placeholderPage({
     required String title,
-    required Color color,
-    required VoidCallback onTap,
+    required IconData icon,
+    required String description,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(9),
-      child: Container(
-        constraints: const BoxConstraints(
-          minHeight: 46,
-        ),
-        padding: const EdgeInsets.symmetric(
-          horizontal: 13,
-          vertical: 8,
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 30,
-              height: 30,
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                icon,
-                color: color,
-                size: 18,
-              ),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 70),
+      child: Column(
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: const Color(0xFFEAF1FF),
+              borderRadius: BorderRadius.circular(16),
             ),
-
-            const SizedBox(width: 10),
-
-            Expanded(
-              child: Text(
-                title,
-                style: const TextStyle(
-                  color: Color(0xFFB2BCD0),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  height: 1.25,
-                ),
-              ),
+            child: Icon(icon, size: 30, color: primaryBlue),
+          ),
+          const SizedBox(height: 18),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF172033),
             ),
-
-            const Icon(
-              Icons.chevron_right,
-              color: Color(0xFF71819F),
-              size: 17,
+          ),
+          const SizedBox(height: 8),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Text(
+              description,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 13, color: Color(0xFF8791A3)),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ============================================================
-  // SIDEBAR SUB ITEM
-  // ============================================================
-
-  Widget _sidebarSubItem(
-    String title,
-    bool selected,
-    VoidCallback onTap, {
-    IconData? icon,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(7),
-      child: Container(
-        height: 35,
-        margin: const EdgeInsets.only(left: 28),
-        padding: const EdgeInsets.symmetric(
-          horizontal: 12,
-        ),
-        decoration: BoxDecoration(
-          color: selected
-              ? const Color(0xFF163B7A)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(7),
-        ),
-        child: Row(
-          children: [
-            // Submenu Icon
-            Icon(
-              icon,
-              color: selected
-                  ? Colors.white
-                  : const Color(0xFF71819F),
-              size: 16,
-            ),
-
-            const SizedBox(width: 10),
-
-            // Submenu Title
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  color: selected
-                      ? Colors.white
-                      : const Color(0xFF8795B0),
-                  fontSize: 10.5,
-                  fontWeight: selected
-                      ? FontWeight.w600
-                      : FontWeight.w400,
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -1240,208 +1177,113 @@ class _LandingPageState extends State<LandingPage> {
   // ============================================================
 
   Widget _buildMainArea() {
-    return Column(
-      children: [
-        // ======================================================
-        // FIXED TOP BAR
-        // ======================================================
-
-        Container(
-          color: const Color(0xFFF5F7FB),
-          padding: const EdgeInsets.fromLTRB(
-            28,
-            22,
-            28,
-            15,
-          ),
-          child: _buildTopBar(),
-        ),
-
-        // ======================================================
-        // FIXED WELCOME BANNER
-        // ======================================================
-
-        Container(
-          color: const Color(0xFFF5F7FB),
-          padding: const EdgeInsets.fromLTRB(
-            28,
-            8,
-            28,
-            0,
-          ),
-          child: _buildWelcomeBanner(),
-        ),
-
-        // ======================================================
-        // ONLY THIS PART WILL SCROLL
-        // ======================================================
-
-        Expanded(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(
-              28,
-              22,
-              28,
-              35,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildStats(),
-
-                const SizedBox(height: 27),
-
-                _buildServicesHeader(),
-
-                const SizedBox(height: 13),
-
-                _buildServicesTable(),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ============================================================
-  // TOP BAR
-  // ============================================================
-
-  Widget _buildTopBar() {
-  return Row(
+  return Column(
     children: [
-
-      // ==========================================
-      // COLLAPSE ICON
-      // ==========================================
-
-      IconButton(
-        onPressed: () {},
-        padding: EdgeInsets.zero,
-        constraints: const BoxConstraints(
-          minWidth: 32,
-          minHeight: 32,
-        ),
-        icon: const Icon(
-          Icons.keyboard_double_arrow_left,
-          color: Color(0xFF71819F),
-          size: 25,
-        ),
-      ),
-
-      const SizedBox(width: 14),
-
-      // ==========================================
-      // SEARCH BAR
-      // ==========================================
-
       Container(
-        width: 350,
-        height: 44,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(9),
-          border: Border.all(
-            color: const Color(0xFFE4E8F0),
-          ),
-        ),
-        child: const Row(
-          children: [
-            SizedBox(width: 14),
-
-            Icon(
-              Icons.search,
-              size: 19,
-              color: Color(0xFF9BA5B7),
-            ),
-
-            SizedBox(width: 10),
-
-            Text(
-              'Search...',
-              style: TextStyle(
-                color: Color(0xFFA0A9BA),
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
+        color: const Color(0xFFF5F7FB),
+        padding: const EdgeInsets.fromLTRB(28, 22, 28, 15),
+        child: _buildTopBar(),
       ),
 
-      // ==========================================
-      // NOTIFICATION - SEARCH BAR PAKKATHULA
-      // ==========================================
+      Expanded(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(28, 4, 28, 35),
 
-      const SizedBox(width: 18),
+          // ==================================================
+          // ROUTED PAGE / DASHBOARD CONTENT
+          // ==================================================
 
-      Container(
-        width: 38,
-        height: 38,
-        decoration: BoxDecoration(
-          color: const Color(0xFFEAF1FF),
-          borderRadius: BorderRadius.circular(9),
+          child: _pageForSelectedMenu() ?? Column(
+
+
+
+
+
+
+
+
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildDashboardHeader(),
+
+                    const SizedBox(height: 22),
+
+                    _sectionLabel('PLATFORM OVERVIEW'),
+
+                    const SizedBox(height: 10),
+
+                    _buildPlatformOverview(),
+
+                    const SizedBox(height: 24),
+
+                    _sectionLabel('SYSTEM STATUS'),
+
+                    const SizedBox(height: 10),
+
+                    _buildSystemStatus(),
+
+                    const SizedBox(height: 24),
+
+                    _sectionLabel('RESOURCE UTILIZATION'),
+
+                    const SizedBox(height: 10),
+
+                    _buildResourceUtilization(),
+
+                    const SizedBox(height: 24),
+
+                    _sectionLabel('QUICK NAVIGATION'),
+
+                    const SizedBox(height: 10),
+
+                    _buildQuickNavigation(),
+
+                    const SizedBox(height: 24),
+
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final bool wide =
+                            constraints.maxWidth >= 900;
+
+                        final alerts =
+                            _buildSecurityAlertsCard();
+
+                        final activity =
+                            _buildRecentActivityCard();
+
+                        if (wide) {
+                          return Row(
+                            crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: alerts,
+                              ),
+
+                              const SizedBox(width: 16),
+
+                              Expanded(
+                                child: activity,
+                              ),
+                            ],
+                          );
+                        }
+
+                        return Column(
+                          children: [
+                            alerts,
+
+                            const SizedBox(height: 16),
+
+                            activity,
+                          ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
         ),
-        child: const Icon(
-          Icons.notifications_none_outlined,
-          color: Color(0xFF4F6180),
-          size: 21,
-        ),
-      ),
-
-      // ==========================================
-      // GAP
-      // ==========================================
-
-      const Spacer(),
-
-      // ==========================================
-      // ADMIN PROFILE - FAR RIGHT
-      // ==========================================
-
-      Container(
-        width: 38,
-        height: 38,
-        decoration: BoxDecoration(
-          color: primaryBlue,
-          borderRadius: BorderRadius.circular(50),
-        ),
-        alignment: Alignment.center,
-        child: const Text(
-          'AD',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-
-      const SizedBox(width: 10),
-
-      const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Admin User',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF202A3A),
-            ),
-          ),
-
-          SizedBox(height: 2),
-
-          Text(
-            'Administrator',
-            style: TextStyle(
-              fontSize: 10,
-              color: Color(0xFF8A94A6),
-            ),
-          ),
-        ],
       ),
     ],
   );
@@ -1467,298 +1309,391 @@ class _LandingPageState extends State<LandingPage> {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  // ============================================================
-  // WELCOME BANNER
-  // ============================================================
-  Widget _buildWelcomeBanner() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(
-        20,
-        10,
-        20,
-        10,
+  Widget _sectionLabel(String text) {
+    return Text(
+      text,
+      style: const TextStyle(
+        fontSize: 10,
+        fontWeight: FontWeight.w800,
+        color: Color(0xFF8A93A5),
+        letterSpacing: 0.8,
       ),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-          colors: [
-            Color(0xFF1769FF),
-            Color(0xFF2E82FF),
-          ],
+    );
+  }
+
+  // ============================================================
+  // TOP BAR
+  // ============================================================
+
+  Widget _buildTopBar() {
+    return Row(
+      children: [
+        IconButton(
+          onPressed: () {},
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+          icon: const Icon(
+            Icons.keyboard_double_arrow_left,
+            color: Color(0xFF71819F),
+            size: 25,
+          ),
         ),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Welcome to OneCloud Enterprise Platform',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    height: 1.1,
+        const SizedBox(width: 14),
+        Expanded(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Container(
+              height: 44,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(9),
+                border: Border.all(color: const Color(0xFFE4E8F0)),
+              ),
+              child: const Row(
+                children: [
+                  SizedBox(width: 14),
+                  Icon(Icons.search, size: 19, color: Color(0xFF9BA5B7)),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Search tenants, users, settings, audit logs...',
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(color: Color(0xFFA0A9BA), fontSize: 12),
+                    ),
                   ),
-                ),
-
-                const SizedBox(height: 5),
-
-                Text(
-                  'A unified enterprise platform that connects domain microservices, business operations, automation, analytics, AI, and security in one powerful ecosystem.',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.88),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w400,
-                    height: 1.25,
-                  ),
-                ),
-
-                const SizedBox(height: 7),
-
-                Row(
-                  children: [
-                    _welcomeChip(
-                      Icons.apps_outlined,
-                      '16 Domain Services',
-                    ),
-                    const SizedBox(width: 7),
-                    _welcomeChip(
-                      Icons.cloud_done_outlined,
-                      'Cloud Ready',
-                    ),
-                    const SizedBox(width: 7),
-                    _welcomeChip(
-                      Icons.security_outlined,
-                      'Secure Platform',
-                    ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-
-          const SizedBox(width: 15),
-
-          Container(
-            width: 60,
-            height: 60,
+        ),
+        const SizedBox(width: 18),
+        InkWell(
+          borderRadius: BorderRadius.circular(9),
+          onTap: () {
+            setState(() => selectedMenu = 'Notifications');
+          },
+          child: Container(
+            width: 38,
+            height: 38,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.12),
-              shape: BoxShape.circle,
+              color: const Color(0xFFEAF1FF),
+              borderRadius: BorderRadius.circular(9),
             ),
             child: const Icon(
-              Icons.cloud_done_outlined,
-              color: Colors.white,
-              size: 30,
+              Icons.notifications_none_outlined,
+              color: Color(0xFF4F6180),
+              size: 21,
             ),
           ),
-        ],
-      ),
+        ),
+        const SizedBox(width: 18),
+        Container(
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(
+            color: primaryBlue,
+            borderRadius: BorderRadius.circular(50),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Image.asset(
+            kAvatarAssetPath,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return const Center(
+                child: Text(
+                  'RK',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(width: 10),
+        const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'sriram',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF202A3A)),
+            ),
+            SizedBox(height: 2),
+            Text(
+              'Super Admin',
+              style: TextStyle(fontSize: 10, color: Color(0xFF8A94A6)),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
   // ============================================================
-  // WELCOME CHIP
+  // DASHBOARD HEADER
   // ============================================================
 
-  Widget _welcomeChip(
-    IconData icon,
-    String text,
-  ) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 7,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(7),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.15),
+  Widget _buildDashboardHeader() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Platform Administration / Dashboard',
+                style: TextStyle(fontSize: 11, color: Color(0xFF8A93A5), fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 6),
+              const Text(
+                'Super Admin Dashboard',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Color(0xFF172033)),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Welcome back, Super Admin',
+                style: TextStyle(fontSize: 12.5, color: Color(0xFF8791A3)),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 16),
+        Row(
+          children: [
+            OutlinedButton.icon(
+              onPressed: _handleRefresh,
+              icon: isRefreshing
+                  ? const SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.refresh, size: 17),
+              label: const Text('Refresh'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF465267),
+                side: const BorderSide(color: Color(0xFFE0E4EC)),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
+                textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+              ),
+            ),
+            const SizedBox(width: 10),
+            ElevatedButton.icon(
+              onPressed: _handleExportReport,
+              icon: const Icon(Icons.file_download_outlined, size: 17),
+              label: const Text('Export report'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryBlue,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
+                textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  void _handleRefresh() {
+    setState(() => isRefreshing = true);
+    Future.delayed(const Duration(milliseconds: 700), () {
+      if (!mounted) return;
+      setState(() => isRefreshing = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Dashboard refreshed.'), behavior: SnackBarBehavior.floating),
+      );
+    });
+  }
+
+  void _handleExportReport() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Preparing report export…'), behavior: SnackBarBehavior.floating),
+    );
+    // TODO: hook this up to your real export/report-generation logic.
+  }
+
+  // ============================================================
+  // PLATFORM OVERVIEW
+  // ============================================================
+
+  Widget _buildPlatformOverview() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final cards = [
+          _overviewCard(
+            icon: Icons.people_alt_outlined,
+            label: 'TOTAL USERS',
+            value: '96,412',
+            footnote: '↑ 1.8% this month',
+            footnoteColor: greenColor,
+          ),
+          _overviewCard(
+            icon: Icons.wifi_tethering_outlined,
+            label: 'ACTIVE USERS',
+            value: '78,930',
+            footnote: '● 4,215 online now',
+            footnoteColor: greenColor,
+          ),
+          _overviewCard(
+            icon: Icons.apartment_outlined,
+            label: 'ORGANIZATIONS',
+            value: '1,842',
+            footnote: '↑ 4.2% this month',
+            footnoteColor: greenColor,
+          ),
+          _overviewCard(
+            icon: Icons.badge_outlined,
+            label: 'LICENSES ACTIVE',
+            value: '2,140',
+            footnote: '27 expiring < 30 days',
+            footnoteColor: Colors.white70,
+            highlighted: true,
+          ),
+        ];
+
+        if (width >= 950) {
+          return Row(
+            children: [
+              for (int i = 0; i < cards.length; i++) ...[
+                Expanded(child: cards[i]),
+                if (i != cards.length - 1) const SizedBox(width: 14),
+              ],
+            ],
+          );
+        }
+
+        return Wrap(
+          spacing: 14,
+          runSpacing: 14,
+          children: [
+            for (final card in cards) SizedBox(width: (width - 14) / 2, child: card),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _overviewCard({
+    required IconData icon,
+    required String label,
+    required String value,
+    required String footnote,
+    required Color footnoteColor,
+    bool highlighted = false,
+  }) {
+    return InkWell(
+      onTap: () {
+        if (label == 'LICENSES ACTIVE') {
+          setState(() => selectedMenu = 'License Management');
+        }
+      },
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 108),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: highlighted
+              ? const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF1769FF), Color(0xFF2E82FF)],
+                )
+              : null,
+          color: highlighted ? null : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: highlighted ? null : Border.all(color: const Color(0xFFE5E9F2)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.025),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.4,
+                    color: highlighted ? Colors.white70 : const Color(0xFF7A8499),
+                  ),
+                ),
+                Icon(icon, size: 17, color: highlighted ? Colors.white : primaryBlue),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 23,
+                fontWeight: FontWeight.w800,
+                color: highlighted ? Colors.white : const Color(0xFF172033),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              footnote,
+              style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: footnoteColor),
+            ),
+          ],
         ),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            color: Colors.white,
-            size: 13,
-          ),
-          const SizedBox(width: 6),
-          Text(
-            text,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 9.5,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
   // ============================================================
-  // STATISTICS
+  // SYSTEM STATUS
   // ============================================================
 
-  Widget _buildStats() {
+  Widget _buildSystemStatus() {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: const Color(0xFFE5E9F2),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.025),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        border: Border.all(color: const Color(0xFFE5E9F2)),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final width = constraints.maxWidth;
-
-          if (width >= 950) {
+          final items = [
+            _statusItem('SERVER STATUS', 'Healthy', greenColor),
+            _statusItem('DATABASE', 'Connected', greenColor),
+            _statusItem('API GATEWAY', 'Running', greenColor),
+            _statusItem('STORAGE', '68% used', amberColor),
+          ];
+          final wide = constraints.maxWidth >= 750;
+          if (wide) {
             return Row(
               children: [
-                Expanded(
-                  child: _statCard(
-                    icon: Icons.people_alt_outlined,
-                    title: 'TOTAL USERS',
-                    value: '12,480',
-                    label: 'Active users',
-                    change: '+12.5%',
-                  ),
-                ),
-
-                const SizedBox(width: 14),
-
-                Expanded(
-                  child: _statCard(
-                    icon: Icons.cloud_outlined,
-                    title: 'CLOUD SERVICES',
-                    value: '248',
-                    label: 'Running services',
-                    change: '+8.2%',
-                  ),
-                ),
-
-                const SizedBox(width: 14),
-
-                Expanded(
-                  child: _statCard(
-                    icon: Icons.bolt_outlined,
-                    title: 'TOTAL REQUESTS',
-                    value: '1.2M',
-                    label: 'This month',
-                    change: '+18.7%',
-                  ),
-                ),
-
-                const SizedBox(width: 14),
-
-                Expanded(
-                  child: _statCard(
-                    icon: Icons.analytics_outlined,
-                    title: 'SYSTEM UPTIME',
-                    value: '99.9%',
-                    label: 'Last 30 days',
-                    change: '+0.3%',
-                  ),
-                ),
+                for (int i = 0; i < items.length; i++) ...[
+                  Expanded(child: items[i]),
+                  if (i != items.length - 1) const SizedBox(width: 14),
+                ],
               ],
             );
           }
-
           return Wrap(
-            spacing: 14,
+            spacing: 20,
             runSpacing: 14,
             children: [
-              SizedBox(
-                width: (width - 14) / 2,
-                child: _statCard(
-                  icon: Icons.people_alt_outlined,
-                  title: 'TOTAL USERS',
-                  value: '12,480',
-                  label: 'Active users',
-                  change: '+12.5%',
-                ),
-              ),
-
-              SizedBox(
-                width: (width - 14) / 2,
-                child: _statCard(
-                  icon: Icons.cloud_outlined,
-                  title: 'CLOUD SERVICES',
-                  value: '248',
-                  label: 'Running services',
-                  change: '+8.2%',
-                ),
-              ),
-
-              SizedBox(
-                width: (width - 14) / 2,
-                child: _statCard(
-                  icon: Icons.bolt_outlined,
-                  title: 'TOTAL REQUESTS',
-                  value: '1.2M',
-                  label: 'This month',
-                  change: '+18.7%',
-                ),
-              ),
-
-              SizedBox(
-                width: (width - 14) / 2,
-                child: _statCard(
-                  icon: Icons.analytics_outlined,
-                  title: 'SYSTEM UPTIME',
-                  value: '99.9%',
-                  label: 'Last 30 days',
-                  change: '+0.3%',
-                ),
-              ),
+              for (final item in items)
+                SizedBox(width: (constraints.maxWidth - 20) / 2, child: item),
             ],
           );
         },
@@ -1766,167 +1701,81 @@ class _LandingPageState extends State<LandingPage> {
     );
   }
 
-  // ============================================================
-  // STAT CARD
-  // ============================================================
-
-  Widget _statCard({
-    required IconData icon,
-    required String title,
-    required String value,
-    required String label,
-    required String change,
-  }) {
-    return Container(
-      constraints: const BoxConstraints(
-        minHeight: 115,
-      ),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFC),
-        borderRadius: BorderRadius.circular(11),
-        border: Border.all(
-          color: const Color(0xFFE8ECF3),
+  Widget _statusItem(String label, String value, Color dotColor) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 9.5,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF9BA5B7),
+            letterSpacing: 0.4,
+          ),
         ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Icon(Icons.circle, size: 9, color: dotColor),
+            const SizedBox(width: 7),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF202A3A)),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // ============================================================
+  // RESOURCE UTILIZATION
+  // ============================================================
+
+  Widget _buildResourceUtilization() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5E9F2)),
       ),
-      child: Row(
+      child: Column(
         children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: const Color(0xFFEAF1FF),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(
-              icon,
-              color: primaryBlue,
-              size: 22,
-            ),
-          ),
-
-          const SizedBox(width: 12),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF7A8499),
-                    letterSpacing: 0.4,
-                  ),
-                ),
-
-                const SizedBox(height: 4),
-
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 21,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF172033),
-                  ),
-                ),
-
-                const SizedBox(height: 2),
-
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        label,
-                        style: const TextStyle(
-                          fontSize: 10,
-                          color: Color(0xFF8A93A5),
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-
-                    Text(
-                      change,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF16A36A),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
+          _resourceBar('CPU usage', 0.42, primaryBlue),
+          const SizedBox(height: 16),
+          _resourceBar('Memory usage', 0.57, const Color(0xFF7C5CFF)),
+          const SizedBox(height: 16),
+          _resourceBar('Storage', 0.68, amberColor),
         ],
       ),
     );
   }
 
-  // ============================================================
-  // SERVICES HEADER
-  // ============================================================
-
-  Widget _buildServicesHeader() {
-    return Row(
+  Widget _resourceBar(String label, double value, Color color) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Active Cloud Cluster Services',
-                style: TextStyle(
-                  fontSize: 19,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF172033),
-                ),
-              ),
-
-              SizedBox(height: 5),
-
-              Text(
-                'Monitor and manage your active enterprise domain services.',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF8791A3),
-                ),
-              ),
-            ],
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF465267))),
+            Text(
+              '${(value * 100).round()}%',
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF202A3A)),
+            ),
+          ],
         ),
-
-        Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 13,
-            vertical: 8,
-          ),
-          decoration: BoxDecoration(
-            color: const Color(0xFFEAF8F1),
-            borderRadius: BorderRadius.circular(7),
-          ),
-          child: const Row(
-            children: [
-              Icon(
-                Icons.circle,
-                size: 7,
-                color: Color(0xFF16A36A),
-              ),
-
-              SizedBox(width: 7),
-
-              Text(
-                'All Systems Operational',
-                style: TextStyle(
-                  color: Color(0xFF168A59),
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(6),
+          child: LinearProgressIndicator(
+            value: value,
+            minHeight: 8,
+            backgroundColor: const Color(0xFFEEF1F6),
+            valueColor: AlwaysStoppedAnimation<Color>(color),
           ),
         ),
       ],
@@ -1934,388 +1783,101 @@ class _LandingPageState extends State<LandingPage> {
   }
 
   // ============================================================
-  // SERVICES TABLE
+  // QUICK NAVIGATION
   // ============================================================
 
-  Widget _buildServicesTable() {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(13),
-        border: Border.all(
-          color: const Color(0xFFE4E8F0),
-        ),
-      ),
-      child: Column(
-        children: [
-          // ======================================================
-          // TABLE HEADER
-          // ======================================================
+  Widget _buildQuickNavigation() {
+    final items = [
+      ('User Management', 'Manage accounts & roles', Icons.people_alt_outlined, 'User Management'),
+      ('Platform Settings', 'Global configuration', Icons.settings_outlined, 'Platform Configuration'),
+      ('License Management', 'Renewals & seat usage', Icons.badge_outlined, 'License Management'),
+      ('Audit Logs', 'Track admin actions', Icons.fact_check_outlined, 'Audit Logs'),
+      ('Notifications', 'Notification centre', Icons.notifications_none_outlined, 'Notifications'),
+      ('Backup & Recovery', 'Snapshots & restore', Icons.settings_backup_restore_outlined, 'Backup & Recovery'),
+      ('Reports', 'Platform analytics', Icons.bar_chart_outlined, 'Reports'),
+      ('Security Center', 'Threats & policies', Icons.shield_outlined, 'Security Center'),
+    ];
 
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 15,
-            ),
-            decoration: const BoxDecoration(
-              color: Color(0xFFF9FAFC),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(13),
-                topRight: Radius.circular(13),
-              ),
-            ),
-            child: const Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: Text(
-                    'SERVICE',
-                    style: _tableHeaderStyle,
-                  ),
-                ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        int columns = 4;
+        if (width < 950) columns = 3;
+        if (width < 700) columns = 2;
+        final itemWidth = (width - (columns - 1) * 14) / columns;
 
-                Expanded(
-                  flex: 2,
-                  child: Text(
-                    'STATUS',
-                    style: _tableHeaderStyle,
-                  ),
-                ),
-
-                Expanded(
-                  flex: 2,
-                  child: Text(
-                    'REGION',
-                    style: _tableHeaderStyle,
-                  ),
-                ),
-
-                Expanded(
-                  flex: 2,
-                  child: Text(
-                    'UPTIME',
-                    style: _tableHeaderStyle,
-                  ),
-                ),
-
-                Expanded(
-                  flex: 2,
-                  child: Text(
-                    'REQUESTS',
-                    style: _tableHeaderStyle,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // ======================================================
-          // SERVICE ROWS
-          // ======================================================
-
-          _serviceRow(
-            icon: Icons.settings_outlined,
-            name: 'Platform Administration',
-            description: 'Core platform services',
-            region: 'Asia South',
-            uptime: '99.99%',
-            requests: '248K',
-          ),
-
-          _serviceRow(
-            icon: Icons.people_outline,
-            name: 'HRMS Service',
-            description: 'Human resource management',
-            region: 'Asia South',
-            uptime: '99.98%',
-            requests: '182K',
-          ),
-
-          _serviceRow(
-            icon: Icons.groups_outlined,
-            name: 'CRM Service',
-            description: 'Customer relationship management',
-            region: 'Asia South',
-            uptime: '99.97%',
-            requests: '316K',
-          ),
-
-          _serviceRow(
-            icon: Icons.business_center_outlined,
-            name: 'ERP Service',
-            description: 'Enterprise resource planning',
-            region: 'Asia South',
-            uptime: '99.96%',
-            requests: '195K',
-          ),
-
-          _serviceRow(
-            icon: Icons.account_balance_outlined,
-            name: 'Finance & Accounting',
-            description: 'Financial operations',
-            region: 'Asia South',
-            uptime: '99.99%',
-            requests: '124K',
-          ),
-
-          _serviceRow(
-            icon: Icons.account_tree_outlined,
-            name: 'Workflow & Automation',
-            description: 'Business workflow automation',
-            region: 'Asia South',
-            uptime: '99.95%',
-            requests: '98K',
-          ),
-
-          _serviceRow(
-            icon: Icons.description_outlined,
-            name: 'Document Management',
-            description: 'Enterprise document services',
-            region: 'Asia South',
-            uptime: '99.94%',
-            requests: '86K',
-          ),
-
-          _serviceRow(
-            icon: Icons.card_membership_outlined,
-            name: 'Subscription Service',
-            description: 'Plans and subscription management',
-            region: 'Asia South',
-            uptime: '99.96%',
-            requests: '74K',
-          ),
-
-          _serviceRow(
-            icon: Icons.trending_up_outlined,
-            name: 'Revenue Service',
-            description: 'Revenue tracking and analytics',
-            region: 'Asia South',
-            uptime: '99.93%',
-            requests: '69K',
-          ),
-
-          _serviceRow(
-            icon: Icons.bar_chart_outlined,
-            name: 'Reporting & BI',
-            description: 'Business intelligence and reporting',
-            region: 'Asia South',
-            uptime: '99.95%',
-            requests: '61K',
-          ),
-
-          _serviceRow(
-            icon: Icons.auto_awesome_outlined,
-            name: 'Enterprise AI',
-            description: 'AI and intelligent automation',
-            region: 'Asia South',
-            uptime: '99.92%',
-            requests: '76K',
-          ),
-
-          _serviceRow(
-            icon: Icons.notifications_none_outlined,
-            name: 'Notification Service',
-            description: 'Multi-channel notifications',
-            region: 'Asia South',
-            uptime: '99.97%',
-            requests: '54K',
-          ),
-
-          _serviceRow(
-            icon: Icons.calendar_month_outlined,
-            name: 'Calendar Service',
-            description: 'Calendar and meeting management',
-            region: 'Asia South',
-            uptime: '99.96%',
-            requests: '42K',
-          ),
-
-          _serviceRow(
-            icon: Icons.integration_instructions_outlined,
-            name: 'Integration Service',
-            description: 'API and third-party integrations',
-            region: 'Asia South',
-            uptime: '99.94%',
-            requests: '38K',
-          ),
-
-          _serviceRow(
-            icon: Icons.search_outlined,
-            name: 'Search Service',
-            description: 'Global enterprise search',
-            region: 'Asia South',
-            uptime: '99.98%',
-            requests: '91K',
-          ),
-
-          _serviceRow(
-            icon: Icons.security_outlined,
-            name: 'Security & Compliance',
-            description: 'Security, audit and compliance',
-            region: 'Asia South',
-            uptime: '99.99%',
-            requests: '47K',
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ============================================================
-  // SERVICE ROW
-  // ============================================================
-
-  Widget _serviceRow({
-    required IconData icon,
-    required String name,
-    required String description,
-    required String region,
-    required String uptime,
-    required String requests,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 15,
-      ),
-      decoration: const BoxDecoration(
-        border: Border(
-          top: BorderSide(
-            color: Color(0xFFECEFF4),
-            width: 0.7,
-          ),
-        ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 3,
-            child: Row(
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEAF1FF),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: primaryBlue,
-                    size: 18,
-                  ),
-                ),
-
-                const SizedBox(width: 11),
-
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        name,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF202A3A),
-                        ),
-                      ),
-
-                      const SizedBox(height: 3),
-
-                      Text(
-                        description,
-                        style: const TextStyle(
-                          fontSize: 10,
-                          color: Color(0xFF8B95A7),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          Expanded(
-            flex: 2,
-            child: _statusBadge(),
-          ),
-
-          Expanded(
-            flex: 2,
-            child: Text(
-              region,
-              style: const TextStyle(
-                fontSize: 11,
-                color: Color(0xFF667085),
-              ),
-            ),
-          ),
-
-          Expanded(
-            flex: 2,
-            child: Text(
-              uptime,
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF168A59),
-              ),
-            ),
-          ),
-
-          Expanded(
-            flex: 2,
-            child: Text(
-              requests,
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF465267),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ============================================================
-  // STATUS BADGE
-  // ============================================================
-
-  Widget _statusBadge() {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 9,
-          vertical: 5,
-        ),
-        decoration: BoxDecoration(
-          color: const Color(0xFFEAF8F1),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: const Row(
-          mainAxisSize: MainAxisSize.min,
+        return Wrap(
+          spacing: 14,
+          runSpacing: 14,
           children: [
-            Icon(
-              Icons.circle,
-              size: 6,
-              color: Color(0xFF16A36A),
+            for (final item in items)
+              SizedBox(
+                width: itemWidth,
+                child: _quickNavItem(
+                  title: item.$1,
+                  subtitle: item.$2,
+                  icon: item.$3,
+                  targetMenu: item.$4,
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _quickNavItem({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required String targetMenu,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: () {
+        setState(() => selectedMenu = targetMenu);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Opening $title…'),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(milliseconds: 900),
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE5E9F2)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: const Color(0xFFEAF1FF),
+                borderRadius: BorderRadius.circular(9),
+              ),
+              child: Icon(icon, color: primaryBlue, size: 19),
             ),
-
-            SizedBox(width: 6),
-
-            Text(
-              'Operational',
-              style: TextStyle(
-                fontSize: 9,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF168A59),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF202A3A)),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(fontSize: 10, color: Color(0xFF8B95A7)),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
             ),
           ],
@@ -2323,15 +1885,180 @@ class _LandingPageState extends State<LandingPage> {
       ),
     );
   }
+
+  // ============================================================
+  // SECURITY ALERTS CARD
+  // ============================================================
+
+  Widget _buildSecurityAlertsCard() {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5E9F2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Security alerts',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF172033)),
+          ),
+          const SizedBox(height: 12),
+          for (final alert in securityAlerts)
+            _alertRow(title: alert['title']!, subtitle: alert['subtitle']!, level: alert['level']!),
+          const SizedBox(height: 4),
+          Center(
+            child: TextButton(
+              onPressed: () {
+                setState(() => selectedMenu = 'Security Alerts');
+              },
+              child: const Text(
+                'View all alerts',
+                style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: primaryBlue),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _alertRow({required String title, required String subtitle, required String level}) {
+    Color color;
+    IconData icon;
+    switch (level) {
+      case 'danger':
+        color = redColor;
+        icon = Icons.lock_outline;
+        break;
+      case 'warning':
+        color = amberColor;
+        icon = Icons.warning_amber_outlined;
+        break;
+      default:
+        color = primaryBlue;
+        icon = Icons.info_outline;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
+            child: Icon(icon, size: 15, color: color),
+          ),
+          const SizedBox(width: 11),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF202A3A))),
+                const SizedBox(height: 2),
+                Text(subtitle, style: const TextStyle(fontSize: 10.5, color: Color(0xFF8B95A7))),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // RECENT LOGIN ACTIVITY CARD
+  // ============================================================
+
+  Widget _buildRecentActivityCard() {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5E9F2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Recent login activities',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF172033)),
+              ),
+              const Text('Last 24 hours', style: TextStyle(fontSize: 10.5, color: Color(0xFF8B95A7))),
+            ],
+          ),
+          const SizedBox(height: 12),
+          for (final entry in recentLogins)
+            _activityRow(title: entry['title']!, subtitle: entry['subtitle']!, status: entry['status']!),
+        ],
+      ),
+    );
+  }
+
+  Widget _activityRow({required String title, required String subtitle, required String status}) {
+    Color color;
+    IconData icon;
+    switch (status) {
+      case 'danger':
+        color = redColor;
+        icon = Icons.error_outline;
+        break;
+      case 'warning':
+        color = amberColor;
+        icon = Icons.warning_amber_outlined;
+        break;
+      default:
+        color = greenColor;
+        icon = Icons.check_circle_outline;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 13),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: Color(0xFF202A3A))),
+                const SizedBox(height: 2),
+                Text(subtitle, style: const TextStyle(fontSize: 10, color: Color(0xFF8B95A7))),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-// ================================================================
-// TABLE HEADER STYLE
-// ================================================================
+/// Simple data holder for a sidebar menu entry.
+class _SidebarMenuData {
+  final String title;
+  final IconData icon;
+  const _SidebarMenuData(this.title, this.icon);
+}
 
-const TextStyle _tableHeaderStyle = TextStyle(
-  fontSize: 9,
-  fontWeight: FontWeight.w800,
-  color: Color(0xFF7E899D),
-  letterSpacing: 0.5,
-);
+/// Data holder for an expandable sidebar group (a heading with an
+/// icon plus a list of sub-heading items, each with its own icon).
+/// Used for "HRMS Service".
+class _SidebarGroupData {
+  final String title;
+  final IconData icon;
+  final List<_SidebarMenuData> children;
+  const _SidebarGroupData({
+    required this.title,
+    required this.icon,
+    required this.children,
+  });
+}

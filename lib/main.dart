@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Complete Business Solution',
+      title: 'One Enterprise Cloud Platform',
       theme: ThemeData(
         useMaterial3: true,
         fontFamily: 'Arial',
@@ -222,7 +222,15 @@ class _BrandingPanel extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 const Text(
-                  'Complete Business Solution',
+                  'One Enterprise Cloud Platform',
+
+                  
+
+
+
+
+
+
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -297,6 +305,11 @@ class _BrandingPanel extends StatelessWidget {
     );
   }
 }
+
+
+
+
+
 
 class _FeatureItem extends StatelessWidget {
   final IconData icon;
@@ -520,7 +533,7 @@ class _LoginCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Login to your Complete Business Solution account',
+            'Login to your One Enterprise Cloud Platform account',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 13,
@@ -648,7 +661,7 @@ class _LoginCard extends StatelessWidget {
               text: TextSpan(
                 style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
                 children: [
-                  const TextSpan(text: '© 2026 Complete Business Solution. All rights reserved.\n'),
+                  const TextSpan(text: '© 2026 One Enterprise Cloud Platform. All rights reserved.\n'),
                   TextSpan(
                     text: 'Privacy Policy',
                     style: const TextStyle(color: Color(0xFF1565C0), fontWeight: FontWeight.w600),

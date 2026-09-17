@@ -1,219 +1,347 @@
 import 'package:flutter/material.dart';
-import 'landing_page.dart';
-import 'global_settings_page.dart';
 
 class PlatformAdministrationPage extends StatelessWidget {
   const PlatformAdministrationPage({super.key});
 
-  // ============================================================
-  // COLORS
-  // ============================================================
-
-  static const Color pageBackground = Color(0xFFF2F3F6);
-  static const Color headerBackground = Color(0xFFF7F8FA);
-
-  static const Color bannerBlue = Color(0xFF1769E8);
-  static const Color bannerLightBlue = Color(0xFF5BB9E7);
-
-  static const Color darkText = Color(0xFF303743);
-  static const Color normalText = Color(0xFF555E6B);
-  static const Color lightText = Color(0xFF8A929D);
-
-  static const Color cardColor = Colors.white;
-  static const Color cardBorder = Color(0xFFE1E4E9);
-
-  static const Color checkBackground = Color(0xFFE1E5EA);
-  static const Color checkColor = Color(0xFF4A535F);
-
-  // ============================================================
-  // BUILD
-  // ============================================================
+  static const Color primaryBlue = Color(0xFF1769FF);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: pageBackground,
-      body: SafeArea(
-        child: Column(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ======================================================
+        // HEADER
+        // ======================================================
+
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildTopHeader(context),
-
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(
-                  18,
-                  8,
-                  18,
-                  30,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildHeroBanner(),
-
-                    const SizedBox(height: 20),
-
-                    const Text(
-                      'Available Modules',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: darkText,
-                      ),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Platform Administration',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF8A93A5),
+                      fontWeight: FontWeight.w600,
                     ),
+                  ),
 
-                    const SizedBox(height: 13),
+                  SizedBox(height: 6),
 
-                    _buildModuleGrid(context),
-                  ],
+                  Text(
+                    'Platform Administration',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF172033),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            OutlinedButton.icon(
+              onPressed: () {},
+              icon: const Icon(
+                Icons.refresh,
+                size: 16,
+              ),
+              label: const Text('Refresh'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF465267),
+                side: const BorderSide(
+                  color: Color(0xFFE0E4EC),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 11,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
 
-  // ============================================================
-  // TOP HEADER
-  // ============================================================
+        const SizedBox(height: 24),
 
-  Widget _buildTopHeader(BuildContext context) {
-    return Container(
-      height: 58,
-      width: double.infinity,
-      color: headerBackground,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        children: [
-          // BACK BUTTON
-          InkWell(
-            onTap: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const LandingPage(),
-                ),
-              );
-            },
-            borderRadius: BorderRadius.circular(20),
-            child: const Padding(
-              padding: EdgeInsets.all(5),
-              child: Icon(
-                Icons.arrow_back,
-                size: 20,
-                color: Color(0xFF343A43),
-              ),
-            ),
-          ),
+        // ======================================================
+        // OVERVIEW CARDS
+        // ======================================================
 
-          const SizedBox(width: 20),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth;
 
-          // SETTINGS ICON
-          Container(
-            width: 27,
-            height: 27,
-            decoration: BoxDecoration(
-              color: const Color(0xFFE3EEFF),
-              borderRadius: BorderRadius.circular(7),
-            ),
-            child: const Icon(
-              Icons.settings_outlined,
-              size: 16,
-              color: bannerBlue,
-            ),
-          ),
+            int columns = 4;
 
-          const SizedBox(width: 10),
+            if (width < 900) {
+              columns = 2;
+            }
 
-          // TITLE
-          const Expanded(
-            child: Text(
-              'Platform Administration Service',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: darkText,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+            if (width < 550) {
+              columns = 1;
+            }
 
-  // ============================================================
-  // HERO BANNER
-  // ============================================================
+            final cardWidth =
+                (width - ((columns - 1) * 14)) / columns;
 
-  Widget _buildHeroBanner() {
-    return Container(
-      width: double.infinity,
-      height: 112,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-          colors: [
-            bannerBlue,
-            bannerLightBlue,
-          ],
-        ),
-        borderRadius: BorderRadius.circular(13),
-      ),
-      padding: const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 15,
-      ),
-      child: Row(
-        children: [
-          // CLOUD ICON
-          Container(
-            width: 55,
-            height: 55,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.16),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.cloud_outlined,
-              color: Colors.white,
-              size: 35,
-            ),
-          ),
-
-          const SizedBox(width: 16),
-
-          // TEXT
-          const Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
+            return Wrap(
+              spacing: 14,
+              runSpacing: 14,
               children: [
-                Text(
-                  'Platform Administration Service',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    height: 1.2,
+                SizedBox(
+                  width: cardWidth,
+                  child: _statCard(
+                    title: 'ORGANIZATIONS',
+                    value: '1,842',
+                    subtitle: '↑ 4.2% this month',
+                    icon: Icons.apartment_outlined,
                   ),
                 ),
 
-                SizedBox(height: 6),
+                SizedBox(
+                  width: cardWidth,
+                  child: _statCard(
+                    title: 'TOTAL USERS',
+                    value: '96,412',
+                    subtitle: '↑ 1.8% this month',
+                    icon: Icons.people_outline,
+                  ),
+                ),
 
-                Text(
-                  'Domain microservice workspace',
-                  style: TextStyle(
-                    color: Color(0xFFDCEEFF),
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w500,
+                SizedBox(
+                  width: cardWidth,
+                  child: _statCard(
+                    title: 'LICENSES ACTIVE',
+                    value: '2,140',
+                    subtitle: '27 expiring < 30 days',
+                    icon: Icons.description_outlined,
+                  ),
+                ),
+
+                SizedBox(
+                  width: cardWidth,
+                  child: _uptimeCard(),
+                ),
+              ],
+            );
+          },
+        ),
+
+        const SizedBox(height: 28),
+
+        // ======================================================
+        // SUPER ADMIN MANAGEMENT
+        // ======================================================
+
+        _sectionTitle('SUPER ADMIN MANAGEMENT'),
+
+        const SizedBox(height: 14),
+
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth;
+
+            int columns = 3;
+
+            if (width < 850) {
+              columns = 2;
+            }
+
+            if (width < 550) {
+              columns = 1;
+            }
+
+            final cardWidth =
+                (width - ((columns - 1) * 18)) / columns;
+
+            final items = [
+              _ManagementItem(
+                'Super Admin Dashboard',
+                'Platform status, KPIs, system health, and recent admin activity at a glance.',
+                Icons.grid_view_outlined,
+              ),
+
+              _ManagementItem(
+                'Global Dashboard',
+                'Platform-wide KPIs across every organization, tenants by plan, onboarding trends.',
+                Icons.public_outlined,
+              ),
+
+              _ManagementItem(
+                'Platform Configuration',
+                'Platform name, timezone, session limits, upload size, and environment defaults.',
+                Icons.settings_outlined,
+              ),
+
+              _ManagementItem(
+                'Settings',
+                'Platform behavior toggles, regional defaults, security policy and notifications.',
+                Icons.apps_outlined,
+              ),
+
+              _ManagementItem(
+                'Platform Branding',
+                'Logo, brand colors, login background and custom domain for the platform itself.',
+                Icons.palette_outlined,
+              ),
+
+              _ManagementItem(
+                'Feature Management',
+                'Roll features out by plan tier, and track rollout percentage across tenants.',
+                Icons.extension_outlined,
+              ),
+
+              _ManagementItem(
+                'License Management',
+                'Seat usage, renewal dates, and license status across every organization.',
+                Icons.description_outlined,
+              ),
+
+              _ManagementItem(
+                'Platform Health Overview',
+                'Live status per service — auth, API gateway, database, queues, storage, AI engine.',
+                Icons.monitor_heart_outlined,
+              ),
+            ];
+
+            return Wrap(
+              spacing: 18,
+              runSpacing: 18,
+              children: [
+                for (final item in items)
+                  SizedBox(
+                    width: cardWidth,
+                    child: _managementCard(item),
+                  ),
+              ],
+            );
+          },
+        ),
+
+        const SizedBox(height: 30),
+
+        // ======================================================
+        // ORGANIZATION
+        // ======================================================
+
+        _sectionTitle('ORGANIZATION'),
+
+        const SizedBox(height: 14),
+
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth;
+
+            final cardWidth =
+                width < 650
+                    ? width
+                    : (width - 18) / 2;
+
+            return Wrap(
+              spacing: 18,
+              runSpacing: 18,
+              children: [
+                SizedBox(
+                  width: cardWidth,
+                  child: _managementCard(
+                    const _ManagementItem(
+                      'Company Setup',
+                      'Business units, departments, branches, and legal entity details.',
+                      Icons.business_outlined,
+                    ),
+                  ),
+                ),
+
+                SizedBox(
+                  width: cardWidth,
+                  child: _managementCard(
+                    const _ManagementItem(
+                      'User Management',
+                      'Invite, deactivate and manage roles for every user across the organization.',
+                      Icons.people_alt_outlined,
+                    ),
                   ),
                 ),
               ],
+            );
+          },
+        ),
+
+        const SizedBox(height: 30),
+      ],
+    );
+  }
+
+  // ============================================================
+  // STAT CARD
+  // ============================================================
+
+  Widget _statCard({
+    required String title,
+    required String value,
+    required String subtitle,
+    required IconData icon,
+  }) {
+    return Container(
+      height: 105,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: const Color(0xFFE5E9F2),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment:
+                MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF929BAC),
+                  letterSpacing: 0.5,
+                ),
+              ),
+              Icon(
+                icon,
+                size: 17,
+                color: primaryBlue,
+              ),
+            ],
+          ),
+
+          const Spacer(),
+
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF172033),
+            ),
+          ),
+
+          const SizedBox(height: 4),
+
+          Text(
+            subtitle,
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF16A36A),
             ),
           ),
         ],
@@ -222,134 +350,171 @@ class PlatformAdministrationPage extends StatelessWidget {
   }
 
   // ============================================================
-  // MODULE GRID
+  // PLATFORM UPTIME
   // ============================================================
 
-  Widget _buildModuleGrid(BuildContext context) {
-    final List<String> modules = [
-      'Global Settings',
-      'Platform Config',
-      'License Mgmt.',
-      'Feature Mgmt.',
-      'Resource Mgmt.',
-      'System Health',
-      'Tenant Templates',
-    ];
+  Widget _uptimeCard() {
+    return Container(
+      height: 105,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF1769FF),
+            Color(0xFF1045B8),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment:
+                MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'PLATFORM UPTIME',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.5,
+                ),
+              ),
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        int columns = 3;
-
-        if (constraints.maxWidth < 700) {
-          columns = 2;
-        }
-
-        if (constraints.maxWidth < 450) {
-          columns = 1;
-        }
-
-        return GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: modules.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: columns,
-            crossAxisSpacing: 14,
-            mainAxisSpacing: 11,
-            mainAxisExtent: 48,
+              Icon(
+                Icons.monitor_heart_outlined,
+                color: Colors.white,
+                size: 18,
+              ),
+            ],
           ),
-          itemBuilder: (context, index) {
-            return _buildModuleCard(
-              context,
-              modules[index],
-            );
-          },
-        );
-      },
+
+          Spacer(),
+
+          Text(
+            '99.98%',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+
+          SizedBox(height: 4),
+
+          Text(
+            'Healthy — all regions',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   // ============================================================
-  // MODULE CARD
+  // SECTION TITLE
   // ============================================================
 
-  Widget _buildModuleCard(
-    BuildContext context,
-    String title,
+  Widget _sectionTitle(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+        fontSize: 10,
+        fontWeight: FontWeight.w800,
+        color: Color(0xFF8A93A5),
+        letterSpacing: 0.8,
+      ),
+    );
+  }
+
+  // ============================================================
+  // MANAGEMENT CARD
+  // ============================================================
+
+  Widget _managementCard(
+    _ManagementItem item,
   ) {
-    final bool isGlobalSettings = title == 'Global Settings';
-
     return InkWell(
-      onTap: () {
-        if (isGlobalSettings) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const GlobalSettingsPage(),
-            ),
-          );
-        }
-      },
-      borderRadius: BorderRadius.circular(9),
+      borderRadius: BorderRadius.circular(10),
+      onTap: () {},
       child: Container(
-        decoration: BoxDecoration(
-          color: cardColor,
-          borderRadius: BorderRadius.circular(9),
-          border: Border.all(
-            color: cardBorder,
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.018),
-              blurRadius: 5,
-              offset: const Offset(0, 1),
-            ),
-          ],
+        constraints: const BoxConstraints(
+          minHeight: 105,
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 13),
-        child: Row(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          crossAxisAlignment:
+              CrossAxisAlignment.start,
           children: [
-            // CHECK CIRCLE
             Container(
-              width: 17,
-              height: 17,
-              decoration: const BoxDecoration(
-                color: checkBackground,
-                shape: BoxShape.circle,
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                color: const Color(0xFFEAF1FF),
+                borderRadius:
+                    BorderRadius.circular(7),
               ),
-              child: const Icon(
-                Icons.check,
-                size: 11,
-                color: checkColor,
-              ),
-            ),
-
-            const SizedBox(width: 10),
-
-            // MODULE NAME
-            Expanded(
-              child: Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: normalText,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-
-            // ARROW
-            if (isGlobalSettings)
-              const Icon(
-                Icons.chevron_right,
+              child: Icon(
+                item.icon,
+                color: primaryBlue,
                 size: 17,
-                color: lightText,
               ),
+            ),
+
+            const SizedBox(height: 10),
+
+            Text(
+              item.title,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF202A3A),
+              ),
+            ),
+
+            const SizedBox(height: 5),
+
+            Text(
+              item.description,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 10.5,
+                height: 1.45,
+                color: Color(0xFF8A94A6),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
+}
+
+// ============================================================
+// DATA CLASS
+// ============================================================
+
+class _ManagementItem {
+  final String title;
+  final String description;
+  final IconData icon;
+
+  const _ManagementItem(
+    this.title,
+    this.description,
+    this.icon,
+  );
 }
