@@ -5,6 +5,11 @@ class PlatformAdministrationPage extends StatelessWidget {
 
   static const Color primaryBlue = Color(0xFF1769FF);
 
+  // Below this width the page uses the phone layout:
+  //  - Refresh button shows only the icon
+  //  - Management cards sit 2 across (title only)
+  static const double phoneWidth = 550;
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -14,64 +19,79 @@ class PlatformAdministrationPage extends StatelessWidget {
         // HEADER
         // ======================================================
 
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Platform Administration',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Color(0xFF8A93A5),
-                      fontWeight: FontWeight.w600,
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final bool phone = constraints.maxWidth < phoneWidth;
+
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Platform Administration',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF6B7487),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: 6),
+                      Text(
+                        'Platform Administration',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF172033),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                if (phone)
+                  // Phone: icon-only refresh button
+                  OutlinedButton(
+                    onPressed: () {},
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF354258),
+                      side: const BorderSide(color: Color(0xFFC9D0DD)),
+                      minimumSize: const Size(40, 40),
+                      padding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Icon(Icons.refresh, size: 18),
+                  )
+                else
+                  OutlinedButton.icon(
+                    onPressed: () {},
+                    icon: const Icon(Icons.refresh, size: 16),
+                    label: const Text('Refresh'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF354258),
+                      side: const BorderSide(color: Color(0xFFC9D0DD)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 11,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
-
-                  SizedBox(height: 6),
-
-                  Text(
-                    'Platform Administration',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF172033),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            OutlinedButton.icon(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.refresh,
-                size: 16,
-              ),
-              label: const Text('Refresh'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF465267),
-                side: const BorderSide(
-                  color: Color(0xFFE0E4EC),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 11,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         ),
 
         const SizedBox(height: 24),
 
         // ======================================================
-        // OVERVIEW CARDS
+        // OVERVIEW CARDS  (4 across / 2 across / 1 across on phone)
         // ======================================================
 
         LayoutBuilder(
@@ -79,17 +99,10 @@ class PlatformAdministrationPage extends StatelessWidget {
             final width = constraints.maxWidth;
 
             int columns = 4;
+            if (width < 900) columns = 2;
+            if (width < phoneWidth) columns = 1;
 
-            if (width < 900) {
-              columns = 2;
-            }
-
-            if (width < 550) {
-              columns = 1;
-            }
-
-            final cardWidth =
-                (width - ((columns - 1) * 14)) / columns;
+            final cardWidth = (width - ((columns - 1) * 14)) / columns;
 
             return Wrap(
               spacing: 14,
@@ -104,7 +117,6 @@ class PlatformAdministrationPage extends StatelessWidget {
                     icon: Icons.apartment_outlined,
                   ),
                 ),
-
                 SizedBox(
                   width: cardWidth,
                   child: _statCard(
@@ -114,7 +126,6 @@ class PlatformAdministrationPage extends StatelessWidget {
                     icon: Icons.people_outline,
                   ),
                 ),
-
                 SizedBox(
                   width: cardWidth,
                   child: _statCard(
@@ -124,7 +135,6 @@ class PlatformAdministrationPage extends StatelessWidget {
                     icon: Icons.description_outlined,
                   ),
                 ),
-
                 SizedBox(
                   width: cardWidth,
                   child: _uptimeCard(),
@@ -147,78 +157,68 @@ class PlatformAdministrationPage extends StatelessWidget {
         LayoutBuilder(
           builder: (context, constraints) {
             final width = constraints.maxWidth;
+            final bool phone = width < phoneWidth;
 
+            // Big screen: 3 across. Tablet: 2 across with description.
+            // Phone: 2 across, title only (like the reference photo).
             int columns = 3;
+            if (width < 850) columns = 2;
 
-            if (width < 850) {
-              columns = 2;
-            }
+            final double gap = phone ? 10 : 18;
+            final cardWidth = (width - ((columns - 1) * gap)) / columns;
 
-            if (width < 550) {
-              columns = 1;
-            }
-
-            final cardWidth =
-                (width - ((columns - 1) * 18)) / columns;
-
-            final items = [
+            // Same order as the reference photo.
+            const items = [
               _ManagementItem(
                 'Super Admin Dashboard',
                 'Platform status, KPIs, system health, and recent admin activity at a glance.',
                 Icons.grid_view_outlined,
               ),
-
               _ManagementItem(
                 'Global Dashboard',
                 'Platform-wide KPIs across every organization, tenants by plan, onboarding trends.',
                 Icons.public_outlined,
               ),
-
               _ManagementItem(
                 'Platform Configuration',
                 'Platform name, timezone, session limits, upload size, and environment defaults.',
                 Icons.settings_outlined,
               ),
-
-              _ManagementItem(
-                'Settings',
-                'Platform behavior toggles, regional defaults, security policy and notifications.',
-                Icons.apps_outlined,
-              ),
-
               _ManagementItem(
                 'Platform Branding',
                 'Logo, brand colors, login background and custom domain for the platform itself.',
                 Icons.palette_outlined,
               ),
-
               _ManagementItem(
                 'Feature Management',
                 'Roll features out by plan tier, and track rollout percentage across tenants.',
                 Icons.extension_outlined,
               ),
-
-              _ManagementItem(
-                'License Management',
-                'Seat usage, renewal dates, and license status across every organization.',
-                Icons.description_outlined,
-              ),
-
               _ManagementItem(
                 'Platform Health Overview',
                 'Live status per service — auth, API gateway, database, queues, storage, AI engine.',
                 Icons.monitor_heart_outlined,
               ),
+              _ManagementItem(
+                'License Management',
+                'Seat usage, renewal dates, and license status across every organization.',
+                Icons.description_outlined,
+              ),
+              _ManagementItem(
+                'Settings',
+                'Platform behavior toggles, regional defaults, security policy and notifications.',
+                Icons.apps_outlined,
+              ),
             ];
 
             return Wrap(
-              spacing: 18,
-              runSpacing: 18,
+              spacing: gap,
+              runSpacing: phone ? 6 : 18,
               children: [
                 for (final item in items)
                   SizedBox(
                     width: cardWidth,
-                    child: _managementCard(item),
+                    child: _managementCard(item, compact: phone),
                   ),
               ],
             );
@@ -228,7 +228,7 @@ class PlatformAdministrationPage extends StatelessWidget {
         const SizedBox(height: 30),
 
         // ======================================================
-        // ORGANIZATION
+        // ORGANIZATION  (one per row on phone, with description)
         // ======================================================
 
         _sectionTitle('ORGANIZATION'),
@@ -239,14 +239,11 @@ class PlatformAdministrationPage extends StatelessWidget {
           builder: (context, constraints) {
             final width = constraints.maxWidth;
 
-            final cardWidth =
-                width < 650
-                    ? width
-                    : (width - 18) / 2;
+            final cardWidth = width < 650 ? width : (width - 18) / 2;
 
             return Wrap(
               spacing: 18,
-              runSpacing: 18,
+              runSpacing: 10,
               children: [
                 SizedBox(
                   width: cardWidth,
@@ -258,7 +255,6 @@ class PlatformAdministrationPage extends StatelessWidget {
                     ),
                   ),
                 ),
-
                 SizedBox(
                   width: cardWidth,
                   child: _managementCard(
@@ -295,36 +291,27 @@ class PlatformAdministrationPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: const Color(0xFFE5E9F2),
-        ),
+        border: Border.all(color: const Color(0xFFD5DBE7)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment:
-                MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 title,
                 style: const TextStyle(
-                  fontSize: 9.5,
+                  fontSize: 10,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF929BAC),
+                  color: Color(0xFF5A6479),
                   letterSpacing: 0.5,
                 ),
               ),
-              Icon(
-                icon,
-                size: 17,
-                color: primaryBlue,
-              ),
+              Icon(icon, size: 17, color: primaryBlue),
             ],
           ),
-
           const Spacer(),
-
           Text(
             value,
             style: const TextStyle(
@@ -333,13 +320,11 @@ class PlatformAdministrationPage extends StatelessWidget {
               color: Color(0xFF172033),
             ),
           ),
-
           const SizedBox(height: 4),
-
           Text(
             subtitle,
             style: const TextStyle(
-              fontSize: 10,
+              fontSize: 10.5,
               fontWeight: FontWeight.w600,
               color: Color(0xFF16A36A),
             ),
@@ -372,19 +357,17 @@ class PlatformAdministrationPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment:
-                MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'PLATFORM UPTIME',
                 style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 9.5,
+                  color: Colors.white,
+                  fontSize: 10,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 0.5,
                 ),
               ),
-
               Icon(
                 Icons.monitor_heart_outlined,
                 color: Colors.white,
@@ -392,9 +375,7 @@ class PlatformAdministrationPage extends StatelessWidget {
               ),
             ],
           ),
-
           Spacer(),
-
           Text(
             '99.98%',
             style: TextStyle(
@@ -403,14 +384,12 @@ class PlatformAdministrationPage extends StatelessWidget {
               fontWeight: FontWeight.w800,
             ),
           ),
-
           SizedBox(height: 4),
-
           Text(
             'Healthy — all regions',
             style: TextStyle(
-              color: Colors.white70,
-              fontSize: 10,
+              color: Colors.white,
+              fontSize: 10.5,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -427,9 +406,9 @@ class PlatformAdministrationPage extends StatelessWidget {
     return Text(
       title,
       style: const TextStyle(
-        fontSize: 10,
+        fontSize: 10.5,
         fontWeight: FontWeight.w800,
-        color: Color(0xFF8A93A5),
+        color: Color(0xFF6B7487),
         letterSpacing: 0.8,
       ),
     );
@@ -437,65 +416,62 @@ class PlatformAdministrationPage extends StatelessWidget {
 
   // ============================================================
   // MANAGEMENT CARD
+  // compact = true  -> icon + title only (phone grid)
+  // compact = false -> icon + title + description
   // ============================================================
 
   Widget _managementCard(
-    _ManagementItem item,
-  ) {
+    _ManagementItem item, {
+    bool compact = false,
+  }) {
     return InkWell(
       borderRadius: BorderRadius.circular(10),
       onTap: () {},
       child: Container(
-        constraints: const BoxConstraints(
-          minHeight: 105,
-        ),
+        constraints: BoxConstraints(minHeight: compact ? 84 : 105),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 30,
-              height: 30,
+              width: compact ? 34 : 30,
+              height: compact ? 34 : 30,
               decoration: BoxDecoration(
                 color: const Color(0xFFEAF1FF),
-                borderRadius:
-                    BorderRadius.circular(7),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
                 item.icon,
                 color: primaryBlue,
-                size: 17,
+                size: compact ? 19 : 17,
               ),
             ),
-
             const SizedBox(height: 10),
-
             Text(
               item.title,
-              style: const TextStyle(
-                fontSize: 12,
+              style: TextStyle(
+                fontSize: compact ? 12.5 : 12,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF202A3A),
+                color: const Color(0xFF202A3A),
               ),
             ),
-
-            const SizedBox(height: 5),
-
-            Text(
-              item.description,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 10.5,
-                height: 1.45,
-                color: Color(0xFF8A94A6),
+            if (!compact) ...[
+              const SizedBox(height: 5),
+              Text(
+                item.description,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 11,
+                  height: 1.45,
+                  color: Color(0xFF5F6B80),
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),

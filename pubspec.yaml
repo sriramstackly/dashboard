@@ -23,6 +23,14 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/onecloud_logo.png.png
+    - assets/icons/image.png
     - assets/icons/platform_administration_logo.png
+    - assets/icons/stackly.img.png
+    
+
+    
+
+
+
+    
     
